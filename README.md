@@ -38,7 +38,8 @@ void pmic_init() // Call this after usual platform setup (Serial, Analog/Digital
    // (Optional) Enable built-in driver logging on supported platforms
    pmic.setLogCallback(MP2722_LogLevel::DEBUG);
 
-   pmic.init(); // Returns MP2722_Result::OK on success or other MP2722_Result on failure
+   // All functions returns MP2722_Result::OK on success or other MP2722_Result on failure
+   pmic.init(); // In a real application you should only proceed if this returns OK
 
    // Standard 3.7-4.2V 2100mAh Li-ion/Li-Po battery in ~0.5C charge rate.
    pmic.setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
@@ -56,6 +57,7 @@ MP2722 *pmic = nullptr; // Declare a pointer for the driver instance globally
 
 void pmic_init() // Call after usual platform setup (Serial, Analog/Digital I/O, I2C, etc.)
 {
+   // Set the appropriate handles or bus address for your platform
    mp2722_platform_set_i2c_handle(i2c_device_handle); // Only if your platform uses I2C handle
    mp2722_platform_set_uart_handle(uart_device_handle); // Only if your platform uses UART handle
    mp2722_platform_set_i2c_bus("BUS_ADDRESS"); // Only if you're on Linux (e.g.: "/dev/i2c-1")
@@ -64,7 +66,7 @@ void pmic_init() // Call after usual platform setup (Serial, Analog/Digital I/O,
    pmic = new MP2722();
 
    // Actual driver usage remains the same, besides now dealing with a pointer (-> instead of .)
-   pmic->init(); // -> instead of . since pmic is now a pointer
+   pmic->init(); // In a real application you should only proceed if this returns OK
    pmic->setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
    pmic->setChargeCurrent(1000); // mA = 1A @ CC (Constant Current) Phase - Basic config
    pmic->setCharging(true); // Enable charger (off by default as basic config is required)
@@ -92,10 +94,10 @@ To read charger status, faults, etc. you can call `getStatus()` at any time:
 
 ```cpp
 // Declare a PowerStatus struct to hold the readout
-MP2722::PowerStatus status;
+PowerStatus status{};
 
-// Call from your main app loop at some interval to continuously monitor status/faults, etc.
-pmic.getStatus(status);
+// Call from your main app loop at some interval to monitor status/faults, etc.
+pmic.getStatus(status); // or pmic->getStatus(status) if using pointer instance
 
 // Do whatever with the status (log, update a LED or display, etc.)
 switch (status.charger_status)
