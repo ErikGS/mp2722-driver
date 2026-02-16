@@ -20,7 +20,7 @@ Platform-agnostic I2C driver for the **MPS MP2722** USB Type-C battery charger/p
 | **Arduino**       | Wire            | Serial              | `Serial.begin()` + `Wire.begin()`                        |
 | **ESP-IDF**       | `i2c_master`    | `ESP_LOGx`          | `mp2722_platform_set_i2c_handle()`                       |
 | **STM32 HAL**     | `HAL_I2C_Mem_*` | `HAL_UART_Transmit` | `mp2722_platform_set_i2c_handle()` + `set_uart_handle()` |
-| **Linux**         | `/dev/i2c-X`    | `stderr`            | `mp2722_platform_set_i2c_bus("BUS_ADDRESS")`             |
+| **Linux**         | `/dev/i2c-1`    | `stderr`            | `mp2722_platform_set_i2c_bus("BUS_ADDRESS")`             |
 | **Windows/macOS** | —               | `stderr`            | Provide your own wrappers                                |
 | **Other**         | —               | —                   | Provide your own wrappers                                |
 
@@ -44,7 +44,7 @@ void pmic_init() // Call this after usual platform setup (Serial, Analog/Digital
    // Standard 3.7-4.2V 2100mAh Li-ion/Li-Po battery in ~0.5C charge rate.
    pmic.setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
    pmic.setChargeCurrent(1000); // mA = 1A @ CC (Constant Current) Phase - Basic config
-   pmic.setCharging(true); // Enable charger (off default as basic config is required)
+   pmic.setCharging(true); // Enable charger (off by default as basic config is required)
 }
 ```
 
@@ -60,10 +60,13 @@ void pmic_init() // Call after usual platform setup (Serial, Analog/Digital I/O,
    // Set the appropriate handles or bus address for your platform
    mp2722_platform_set_i2c_handle(i2c_device_handle); // Only if your platform uses I2C handle
    mp2722_platform_set_uart_handle(uart_device_handle); // Only if your platform uses UART handle
-   mp2722_platform_set_i2c_bus("BUS_ADDRESS"); // Only if you're on Linux (e.g.: "/dev/i2c-1")
+   mp2722_platform_set_i2c_bus("/dev/i2c-1"); // Only if you're on Linux, replace with your correct bus address
 
    // Now that the platform I2C/UART handle/bus is set, create the driver instance
    pmic = new MP2722();
+
+   // (Optional) Enable built-in driver logging on supported platforms
+   pmic->setLogCallback(MP2722_LogLevel::DEBUG);
 
    // Actual driver usage remains the same, besides now dealing with a pointer (-> instead of .)
    pmic->init(); // In a real application you should only proceed if this returns OK
@@ -81,11 +84,11 @@ OTG boost mode (port can power devices) is enabled by default based on USB detec
 
 ### Watchdog Timer (heartbeat)
 
-The MP2722 has a built-in watchdog timer that requires periodic "kicks" to prevent it from resetting the device. The `watchdogKick()` method should be called at least once every 30 seconds or less to keep the watchdog from expiring. You can call this in your main loop or set up a timer to call it at regular intervals.
+The MP2722 has a built-in watchdog timer that is enabled by default and has an expiration time of 40 seconds, requiring periodic "kicks" to prevent it from resetting the device. It is recommended `watchdogKick()` method should be called at least once every 30 seconds or less to keep the watchdog from expiring. You can call this in your main loop or set up a timer to call it at regular intervals. You can also disable the watchdog if you don't need it, but it's generally recommended to keep it enabled for safety in case of software crashes or unresponsive states.
 
 ```cpp
 // From your main application loop at a set interval of 30 seconds or less
-pmic.watchdogKick(); // Reset the watchdog timer to prevent PMIC reset
+pmic.watchdogKick(); // Reset the watchdog timer to prevent PMIC reset. You can also disable this.
 ```
 
 ### Reading data
@@ -102,10 +105,10 @@ pmic.getStatus(status); // or pmic->getStatus(status) if using pointer instance
 // Do whatever with the status (log, update a LED or display, etc.)
 switch (status.charger_status)
 {
-   case MP2722::ChargerStatus::NOT_CHARGING:
+   case ChargerStatus::NOT_CHARGING:
       // Handle not charging state
       break;
-   case MP2722::ChargerStatus::CHARGE_DONE:
+   case ChargerStatus::CHARGE_DONE:
       // Handle charge done state
       break;
    default:
@@ -119,16 +122,16 @@ switch (status.charger_status)
 ```cpp
 #include "MP2722.h"
 
-// 1. Declare the driver instance globally providing custom wrappers for your platform's I2C read/write functions (see exmaples/Custom I2C interface/).
+// 1. Declare the driver instance globally providing custom wrappers for your platform's I2C read/write functions
 MP2722 pmic({ your_i2c_write_function, your_i2c_read_function });
 
-// 2. (Optional) Enable driver logging providing a custom wrapper for your platform's logging function (see exmaples/Custom I2C interface/)
-pmic.setLogCallback(your_log_function, MP2722_LogLevel::DEBUG);
+// 2. (Optional) Enable driver logging providing a custom wrapper for your platform's logging function
+pmic.setLogCallback(MP2722_LogLevel::DEBUG, your_log_function);
 
 /// --- Actual driver usage remains the same ---
 ```
 
-**Note:** the I2C function pointers should match `MP2722_I2C` and the log `MP2722_LogCallback` signatures. For the I2C read/write both functions should return `0` on success and non-zero on failure. See the [examples/](MP2722/examples/) folder for complete implementation examples.
+**Note:** the I2C function pointers should match `MP2722_I2C` and the log `MP2722_LogCallback` signatures. For the I2C read/write both functions should return `0` on success and non-zero on failure. See the [examples](examples) folder for complete implementation examples.
 
 ## Installation
 
@@ -138,7 +141,7 @@ Add to your `platformio.ini`:
 
 ```ini
 lib_deps =
-    https://github.com/erikgs/MP2722.git#main
+    https://github.com/erikgs/MP2722-driver.git#main
 ```
 
 PlatformIO auto-detects the library in the `MP2722/` subfolder.
@@ -177,7 +180,7 @@ git submodule add https://github.com/erikgs/mp2722-driver.git libs/driver_mp2722
 
 | Method                                           | Description                                                                                                                   |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `setLogCallback(cb, level)`                      | Set logging callback and max level (`nullptr` to disable)                                                                     |
+| `setLogCallback(level, callback)`                | Set logging callback and max level (`nullptr` to disable)                                                                     |
 | `init()`                                         | Probe device, apply safe defaults (charging off, IIN_MODE=follow-limit), enable buck, auto-OTG, auto-D+/D−, boost-stop-on-low |
 | `reset()`                                        | Reset all registers to defaults                                                                                               |
 | `setChargeVoltage(mv)`                           | Set battery regulation voltage (3600–4600 mV, step 25 mV). **Note:** Values rounded down to nearest step.                     |
@@ -199,20 +202,20 @@ git submodule add https://github.com/erikgs/mp2722-driver.git libs/driver_mp2722
 
 The `getStatus(PowerStatus &status)` method populates the following fields:
 
-| Field                  | Type   | Description                                                                 |
-| ---------------------- | ------ | --------------------------------------------------------------------------- |
-| `legacy_src_type`      | Enum   | Detected input source (USB SDP, DCP, CDP, etc.)                             |
-| `vin_good`             | `bool` | Input source is valid                                                       |
-| `charger_status`       | Enum   | Charging state (Not Charging, Pre-charge, Fast Charge, Done, etc.)          |
-| `charger_fault`        | Enum   | Fault type (None, Input OVP, Thermal Shutdown, Timer Expired, Battery OVP)  |
-| `boost_fault`          | Enum   | Boost mode fault (Overload, OVP, OTP, Battery Low)                          |
-| `fault_battery`        | `bool` | Battery missing or connection fault                                         |
-| `fault_ntc`            | `bool` | NTC thermistor missing or fault                                             |
-| `ntc1_state`           | Enum   | JEITA state for NTC1 (Normal, Warm, Cool, Cold, Hot)                        |
-| `cc1_snk_stat`         | Enum   | USB-C CC1 detection (vRa, vRd-USB, vRd-1.5A, vRd-3.0A)                      |
-| `batt_low_stat`        | `bool` | Battery voltage is below low threshold                                      |
-| `thermal_regulation`   | `bool` | IC is throttling charge current due to heat                                 |
-| `input_dpm_regulation` | `bool` | IC is throttling charge current due to input voltage/current limit (VINDPM) |
+| Field                  | Type                                    | Description                                                                 |
+| ---------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
+| `legacy_src_type`      | [LegacyInputSrcType](src/MP2722_defs.h) | Detected input source (USB SDP, DCP, CDP, etc.)                             |
+| `vin_good`             | `bool`                                  | Input source is valid                                                       |
+| `charger_status`       | [ChargerStatus](src/MP2722_defs.h)      | Charging state (Not Charging, Pre-charge, Fast Charge, Done, etc.)          |
+| `charger_fault`        | [ChargerFault](src/MP2722_defs.h)       | Fault type (None, Input OVP, Thermal Shutdown, Timer Expired, Battery OVP)  |
+| `boost_fault`          | [BoostFault](src/MP2722_defs.h)         | Boost mode fault (Overload, OVP, OTP, Battery Low)                          |
+| `fault_battery`        | `bool`                                  | Battery missing or connection fault                                         |
+| `fault_ntc`            | `bool`                                  | NTC thermistor missing or fault                                             |
+| `ntc1_state`           | [NTCState](src/MP2722_defs.h)           | JEITA state for NTC1 (Normal, Warm, Cool, Cold, Hot)                        |
+| `cc1_snk_stat`         | [CCSinkStatus](src/MP2722_defs.h)       | USB-C CC1 detection (vRa, vRd-USB, vRd-1.5A, vRd-3.0A)                      |
+| `batt_low_stat`        | `bool`                                  | Battery voltage is below low threshold                                      |
+| `thermal_regulation`   | `bool`                                  | IC is throttling charge current due to heat                                 |
+| `input_dpm_regulation` | `bool`                                  | IC is throttling charge current due to input voltage/current limit (VINDPM) |
 
 ## Error Handling
 
