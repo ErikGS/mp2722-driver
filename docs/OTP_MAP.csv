@@ -1,0 +1,52 @@
+# MP2722
+#
+# OTP MAP
+# I2C Slave Address: 3Fh
+# Configuration Bytes: 00h~10h
+# Status Bytes: 11h~16h
+#
+# The MP2722 has a one-time-programming (OTP) function to configure the default values for certain registers. The OTP map below shows the OTP-configurable commands. 
+# No., Bit[7]       , Bit[6]        , Bit[5]       , Bit[4]      , Bit[3]      , Bit[2]       , Bit[1]        , Bit[0]
+00h  , N/A          , EN_STAT_IB    , EN_PG_NTC2   , N/A         , HOLDOFF_TMR , SW_FREQ[1]   , SW_FREQ[0]    , N/A
+01h  , IIN_MODE[2]  , IIN_MODE[1]   , IIN_MODE[0]  , N/A         , N/A         , N/A          , N/A           , N/A
+02h  , N/A          , N/A           , ICC[5]       , ICC[4]      , ICC[3]      , ICC[2]       , ICC[1]        , ICC[0]
+03h  , IPRE[3]      , IPRE[2]       , IPRE[1]      , IPRE[0]     , ITERM[3]    , ITERM[2]     , ITERM[1]      , ITERM[0]
+04h  , N/A          , ITRICKLE[2]   , ITRICKLE[1]  , ITRICKLE[0] , N/A         , N/A          , N/A           , N/A
+05h  , N/A          , N/A           , VBATT[5]     , VBATT[4]    , VBATT[3]    , VBATT[2]     , VBATT[1]      , VBATT[0]
+06h  , VIN_OVP[1]   , VIN_OVP[0]    , SYS_MIN[2]   , SYS_MIN[1]  , SYS_MIN[0]  , N/A          , N/A           , N/A
+07h  , N/A          , N/A           , WATCHDOG[1]  , WATCHDOG[0] , N/A         , N/A          , N/A           , N/A
+08h  , N/A          , N/A           , N/A          , N/A         , N/A         , VBOOST[2]    , VBOOST[1]     , VBOOST[0]
+09h  , N/A          , CC_CFG[2]     , CC_CFG[1]    , CC_CFG[0]   , AUTOOTG     , N/A          , N/A           , N/A
+0Ah  , N/A          , N/A           , AUTODPDM     , N/A         , RP_CFG[1]   , RP_CFG[0]    , FORCE_CC[1]   , FORCE_CC[0]
+0Bh  , N/A          , N/A           , N/A          , HVEN        , N/A         , N/A          , N/A           , N/A
+0Ch  , N/A          , NTC1_ACTION   , NTC2_ACTION  , N/A         , N/A         , N/A          , BOOST_STP_EN  , BOOST_OTP_EN
+10h  , N/A          , N/A           , MASK_THERM   , N/A         , N/A         , MASK_CC_INT  , N/A           , N/A
+#
+# ONE-TIME PROGRAMMABLE (OTP) DEFAULT
+#OTP Items, Default
+#EN_STAT_IB, 0: STAT
+#EN_PG_NTC2, 0: PG
+#HOLDOFF_TMR, 1: Enable the hold-off timer
+#SW_FREQ[1:0], 01: 1MHz
+#IIN_MODE[2:0], 000: Follow IIN_LIM setting
+#ICC[5:0], 011001: 2A
+#IPRE[3:0], 0100: 240mA
+#ITERM[3:0], 0011: 120mA
+#ITRICKLE[2:0], 011: 128mA
+#VBATT[5:0], 011000: 4.2V
+#VIN_OVP[1:0], 00: 6.3V
+#SYS_MIN[2:0], 100: 3.588V
+#WATCHDOG[1:0], 01: 40s
+#VBOOST[2:0], 111: 5.15V
+#CC_CFG[2:0], 000: Sink only
+#AUTOOTG, 1: OTG is controlled automatically
+#AUTODPDM, 1: D+/D- detection automatically starts after VIN_GD = 1 and the hold-off timer ends
+#RP_CFG[1:0], 01: 180uA (USB Type-C 1.5A)
+#FORCE_CC[1:0], 00: CC1 and CC2 are configured automatically
+#HVEN, 1: Enable HV adaptor detection
+#NTC1_ACTION, 1: Active
+#NTC2_ACTION, 0: INT only
+#BOOST_STP_EN, 0: The BATT_LOW comparator only generates INT
+#BOOST_OTP_EN, 1: Boost operation stops if over-temperature protection occurs
+#MASK_THERM, 0: Allow INT
+#MASK_CC_INT, 0: Allow INT

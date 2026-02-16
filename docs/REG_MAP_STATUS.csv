@@ -1,0 +1,69 @@
+# MP2722
+#
+# REGISTER MAP
+# I2C Slave Address: 3Fh
+# Configuration Bytes: 00h~10h
+# Status Bytes: 11h~16h
+#
+# STATUS BYTES (11h~16h)
+# Legend: POR = default value; R/W = read/write; R = read-only; INT = interrupt; YM = the interrupt can be masked
+# Bit , Name           , POR, R/W, INT, Description
+REG11h,                ,    ,    ,    , 
+7     , DPDM_STAT[3]   , -  , R  , No , Returns the input source D+/D- detection result. 0000: Not started (500mA) 0001: USB SDP (500mA) 0010: USB DCP (2A) 0011: USB CDP (1.5A) 0100: Divider 1 (1A) 0101: Divider 2 (2.1A) 0110: Divider 3 (2.4A) 0111: Divider 4 (2A) 1000: Unknown (500mA) 1001: High-voltage adapter (2A) 1110: Divider 5 (3A)
+6     , DPDM_STAT[2]   , -  , R  , No , 
+5     , DPDM_STAT[1]   , -  , R  , No , 
+4     , DPDM_STAT[0]   , -  , R  , No , 
+3     , RESERVED       , -  , R  , No , Reserved.
+2     , RESERVED       , -  , R  , No , Reserved.
+1     , VINDPM_STAT    , -  , R  , YM , 0: Not in VINDPM 1: In VINDPM
+0     , IINDPM_STAT    , -  , R  , YM , 0: Not in IINDPM 1: In IINDPM
+      ,                ,    ,    ,    , 
+REG12h,                ,    ,    ,    , 
+7     , RESERVED       , -  , R  , No , Reserved.
+6     , VIN_GD         , -  , R  , Yes, When VVIN_UV < VIN < VVIN_OV in buck mode this bit is set to 1 and the PG pin is driven low (after a 15ms debounce time). 0: The input source is not valid 1: The input source is good
+5     , VIN_RDY        , -  , R  , Yes, Indicates whether input source type detection has finished. IIN_LIM[4:0] is updated. 0: VIN is not ready to charge 1: VIN is ready to charge
+4     , LEGACYCABLE    , -  , R  , YM , 0: Normal 1: Legacy cable is detected (not valid in DRP mode)
+3     , THERM_STAT     , -  , R  , YM , 0: Not in thermal regulation 1: In thermal regulation
+2     , VSYS_STAT      , -  , R  , No , 0: VBATT < VSYS_MIN 1: VBATT > VSYS_MIN
+1     , WATCHDOG_FAULT , -  , R  , Yes, 0: Normal 1: The watchdog timer has expired
+0     , WATCHDOG_BARK  , -  , R  , Yes, 0: Normal 1: The 3/4 watchdog timer has expired
+      ,                ,    ,    ,    , 
+REG13h,                ,    ,    ,    , 
+7     , CHG_STAT[2]    , -  , R  , No , 000: Not charging 001: Trickle charge 010: Pre-charge 011: Fast charge 100: Constant-voltage charge 101: Charging is done
+6     , CHG_STAT[1]    , -  , R  , No , 
+5     , CHG_STAT[0]    , -  , R  , No , 
+4     , BOOST_FAULT[2] , -  , R  , Yes, 000: Normal 001: An IN overload or short (latch-off) has occurred 010: Boost over-voltage protection (OVP) (not latch) has occurred 011: Boost over-temperature protection (latch-off) has occurred 100: The boost has stopped due to BATT_LOW (latch-off)
+3     , BOOST_FAULT[1] , -  , R  , Yes, 
+2     , BOOST_FAULT[0] , -  , R  , Yes, 
+1     , CHG_FAULT[1]   , -  , R  , Yes, 00: Normal 01: Input OVP 10: The charge timer has expired 11: Battery OVP
+0     , CHG_FAULT[0]   , -  , R  , Yes, 
+      ,                ,    ,    ,    , 
+REG14h,                ,    ,    ,    , 
+7     , NTC_MISSING    , -  , R  , Yes, 0: Normal 1: NTC is missing (VNTC > 95% of VVRNTC)
+6     , BATT_MISSING   , -  , R  , Yes, 0: Normal 1: The battery is missing (2 terminations detected within 3 seconds)
+5     , NTC1_FAULT[2]  , -  , R  , Yes, 000: Normal 001: Warm 010: Cool 011: Cold 100: Hot
+4     , NTC1_FAULT[1]  , -  , R  , Yes, 
+3     , NTC1_FAULT[0]  , -  , R  , Yes, 
+2     , NTC2_FAULT[2]  , -  , R  , Yes, 000: Normal 001: Warm 010: Cool 011: Cold 100: Hot
+1     , NTC2_FAULT[1]  , -  , R  , Yes, 
+0     , NTC2_FAULT[0]  , -  , R  , Yes, 
+      ,                ,    ,    ,    , 
+REG15h,                ,    ,    ,    , 
+7     , CC1_SNK_STAT[1], 0  , R  , YM , 00: CC1 detects vRa 01: CC1 detects vRd-USB 10: CC1 detects vRd-1.5 11: CC1 detects vRd-3.0. A glitch in tPD_DEBOUNCE does not affect this result.
+6     , CC1_SNK_STAT[0], 0  , R  , YM , 
+5     , CC2_SNK_STAT[1], 0  , R  , YM , 00: CC2 detects vRa 01: CC2 detects vRd-USB 10: CC2 detects vRd-1.5 11: CC2 detects vRd-3.0. A glitch in tPD_DEBOUNCE does not affect this result.
+4     , CC2_SNK_STAT[0], 0  , R  , YM , 
+3     , CC1_SRC_STAT[1], 0  , R  , YM , 00: CC1 is vOPEN 01: CC1 detects vRd 10: CC1 detects vRa. A glitch in tPD_DEBOUNCE does not affect this result.
+2     , CC1_SRC_STAT[0], 0  , R  , YM , 
+1     , CC2_SRC_STAT[1], 0  , R  , YM , 00: CC2 is vOPEN 01: CC2 detects vRd 10: CC2 detects vRa. A glitch in tPD_DEBOUNCE does not affect this result.
+0     , CC2_SRC_STAT[0], 0  , R  , YM , 
+      ,                ,    ,    ,    , 
+REG16h,                ,    ,    ,    , 
+7     , RESERVED       , -  , R  , No , Reserved.
+6     , TOPOFF_ACTIVE  , -  , R  , YM , 0: The top-off timer is not counting 1: The top-off timer is counting
+5     , BFET_STAT      , -  , R  , No , 0: The battery is charging or disabled 1: The battery is discharging
+4     , BATT_LOW_STAT  , -  , R  , YM , The hysteresis = 200mV. 0: VBATT is greater than BATT_LOW[1:0] 1: VBATT is below BATT_LOW[1:0]
+3     , OTG_NEED       , -  , R  , Yes, If the boost needs to be turned on/off by CC detection this bit is set/reset with an INT pulse followed. 0: Boost should be disabled 1: Boost should be enabled
+2     , VIN_TEST_HIGH  , -  , R  , Yes, 0: VIN is below the VIN_TEST threshold 1: VIN has reached the VIN_TEST threshold
+1     , DEBUGACC       , -  , R  , YM , 0: Normal 1: Enters DebugAccessory.SNK state
+0     , AUDIOACC       , -  , R  , YM , 0: Normal 1: Enters AudioAccessory state

@@ -1,0 +1,2 @@
+# Exclude all sdkconfig files from being counted by GitHub Linguist
+sdkconfig* linguist-vendored

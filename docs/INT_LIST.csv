@@ -1,0 +1,32 @@
+# MP2722
+#
+# INTERRUPT LIST
+# I2C Slave Address: 3Fh
+# Configuration Bytes: 00h~10h
+# Status Bytes: 11h~16h
+#
+# INT Name    , Related registers                                       , Can be Masked, Event
+VIN_GD        , VIN_GD changes                                          , No           , A good input source has been detected.
+DPDM_DET_DONE , DPDM_STAT[3:0] changes                                  , No           , DPDM detection is finished.
+VIN_RDY       , VIN_RDY 0→1                                             , No           , The input current limit has been updated; the buck converter starts.
+CHG_DONE      , CHG_STAT[2:0] any to 101                                , No           , Charging has terminated.
+RECHARGE      , CHG_STAT[2:0] exits 101 and enter CC/CV charge          , No           , Recharging has been initiated.
+THERM_STAT    , THERM_STAT 0→1                                          , Yes          , The IC has entered charge thermal regulation.
+WATCHDOG_FAULT, WATCHDOG_FAULT 0→1                                      , No           , A watchdog timeout has occurred.
+WATCHDOG_BARK , WATCHDOG_BARK 0→1                                       , No           , A watchdog bark has occurred.
+CHG_FAULT     , CHG_FAULT[1:0] 00→01 00→10 00→11                        , No           , One of the following charge faults has occurred: input OVP / battery OVP / the charge timer has expired.
+NTC_MISSING   , NTC_MISSING changes                                     , No           , NTC is missing.
+BATT_MISSING  , BATT_MISSING changes                                    , No           , BATT is missing.
+BOOST_FAULT   , BOOST_FAULT[2:0] 000→001 000→010 010→000 000→011 000→100, No           , One of the following boost fault has occurred: IN overload or short / boost OVP / boost OTP / the boost has stopped due to BATT_LOW.
+NTC_FAULT     , NTC1_FAULT[2:0] or NTC2_FAULT[2:0] changes              , No           , The NTC status has changed.
+VINDPM_STAT   , VINDPM_STAT 0→1                                         , Yes          , The VIN regulation loop has been entered.
+IINDPM_STAT   , IINDPM_STAT 0→1                                         , Yes          , The IIN regulation loop has been entered.
+TOPOFF_TMR    , TOPOFF_ACTIVE changes                                   , Yes          , The TOPOFF timer has started and ended.
+CC_SNK        , CC1_SNK_STAT[1:0] or CC2_SNK_STAT[1:0] changes          , Yes          , vRd connect has been detected or the source current advertisement has changed.
+CC_SRC        , CC1_SRC_STAT[1:0] or CC2_SRC_STAT[1:0] changes          , Yes          , vRd or vRa has been detected.
+BATT_LOW      , BATT_LOW_STAT 0→1                                       , Yes          , VBATT has dropped to the BATT_LOW threshold.
+OTG_NEED      , OTG_NEED changes                                        , No           , The host has to turn enable/disable boost.
+VIN_TEST_HIGH , VIN_TEST_HIGH 0→1                                       , No           , VIN has reached the VIN_TEST threshold during the input impedance test.
+DEBUGACC      , DEBUGACC changes                                        , Yes          , DebugAccessory.SNK state entry/exit
+AUDIOACC      , AUDIOACC changes                                        , Yes          , AudioAccessory state entry/exit
+HVCHARGER     , DPDM_STAT[3:0] Any → 1001                               , No           , A high-voltage charger has been detected.

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and run tests
+        run: |
+          cd test
+          cmake -B build
+          cmake --build build
+          cd build && ctest --output-on-failure
+
+  platformio-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - board: uno
+            framework: arduino
+            example: MP2722/examples/MP2722_Arduino.ino
+          - board: esp32dev
+            framework: arduino
+            example: MP2722/examples/MP2722_Arduino.ino
+          - board: esp32dev
+            framework: espidf
+            example: MP2722/examples/MP2722_ESP-IDF.cpp
+          - board: nucleo_f446re
+            framework: stm32cube
+            example: MP2722/examples/MP2722_STM32.cpp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install platformio
+      - run: pio ci --lib="MP2722" --board=${{ matrix.board }} "${{ matrix.example }}"

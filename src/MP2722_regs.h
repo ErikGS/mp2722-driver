@@ -1,0 +1,231 @@
+#pragma once
+
+#include <stdint.h>
+
+/* I2C Address */
+#define MP2722_I2C_ADDRESS 0x3F
+
+/* Registers */
+#define MP2722_REG_CONFIG0 0x00
+#define MP2722_REG_CONFIG1 0x01
+#define MP2722_REG_CONFIG2 0x02
+#define MP2722_REG_CONFIG3 0x03
+#define MP2722_REG_CONFIG4 0x04
+#define MP2722_REG_CONFIG5 0x05
+#define MP2722_REG_CONFIG6 0x06
+#define MP2722_REG_CONFIG7 0x07
+#define MP2722_REG_CONFIG8 0x08
+#define MP2722_REG_CONFIG9 0x09
+#define MP2722_REG_CONFIGA 0x0A
+#define MP2722_REG_CONFIGB 0x0B
+#define MP2722_REG_CONFIGC 0x0C
+#define MP2722_REG_CONFIGD 0x0D
+#define MP2722_REG_CONFIGE 0x0E
+#define MP2722_REG_CONFIGF 0x0F
+#define MP2722_REG_CONFIG10 0x10
+
+#define MP2722_REG_STATUS11 0x11
+#define MP2722_REG_STATUS12 0x12
+#define MP2722_REG_STATUS13 0x13
+#define MP2722_REG_STATUS14 0x14
+#define MP2722_REG_STATUS15 0x15
+#define MP2722_REG_STATUS16 0x16
+
+/* CONFIG0 (0x00) */
+#define MP2722_REG_RST_MASK (1 << 7)
+#define MP2722_EN_STAT_IB_MASK (1 << 6)
+#define MP2722_EN_PG_NTC2_MASK (1 << 5)
+#define MP2722_LOCK_CHG_MASK (1 << 4)
+#define MP2722_HOLDOFF_TMR_MASK (1 << 3)
+#define MP2722_SW_FREQ_MASK (0x06) // Bits [2:1]
+#define MP2722_SW_FREQ_SHIFT 1
+#define MP2722_EN_VIN_TRK_MASK (1 << 0)
+
+/* CONFIG1 (0x01) - Input Current Limit (IIN_LIM) */
+#define MP2722_IIN_MODE_MASK (0xE0) // Bits [7:5]
+#define MP2722_IIN_MODE_SHIFT 5
+#define MP2722_IIN_LIM_MASK (0x1F) // Bits [4:0]
+#define MP2722_IIN_LIM_SHIFT 0
+#define MP2722_IIN_LIM_STEP 100
+#define MP2722_IIN_LIM_BASE 100
+
+/* CONFIG2 (0x02) - Fast Charge Current (ICC) & VPRE */
+#define MP2722_VPRE_MASK (0xC0) // Bits [7:6]
+#define MP2722_VPRE_SHIFT 6
+#define MP2722_ICC_MASK (0x3F) // Bits [5:0]
+#define MP2722_ICC_SHIFT 0
+#define MP2722_ICC_STEP 80
+#define MP2722_ICC_BASE 0
+
+/* CONFIG3 (0x03) - Pre-Charge & Termination */
+#define MP2722_IPRE_MASK (0xF0) // Bits [7:4]
+#define MP2722_IPRE_SHIFT 4
+#define MP2722_IPRE_STEP 80
+#define MP2722_IPRE_BASE 80
+#define MP2722_ITERM_MASK (0x0F) // Bits [3:0]
+#define MP2722_ITERM_SHIFT 0
+#define MP2722_ITERM_STEP 30
+#define MP2722_ITERM_BASE 30
+
+/* CONFIG4 (0x04) - Recharge, Trickle, VIN Limit */
+#define MP2722_VRECHG_MASK (1 << 7)
+#define MP2722_ITRICKLE_MASK (0x70) // Bits [6:4]
+#define MP2722_ITRICKLE_SHIFT 4
+#define MP2722_ITRICKLE_STEP 32
+#define MP2722_ITRICKLE_BASE 32
+#define MP2722_VIN_LIM_MASK (0x0F) // Bits [3:0]
+#define MP2722_VIN_LIM_SHIFT 0
+#define MP2722_VIN_LIM_STEP 80
+#define MP2722_VIN_LIM_BASE 3880
+
+/* CONFIG5 (0x05) - Battery Regulation Voltage (VBATT) & Top-Off Timer */
+#define MP2722_TOPOFF_TMR_MASK (0xC0) // Bits [7:6]
+#define MP2722_TOPOFF_TMR_SHIFT 6
+#define MP2722_VBATT_REG_MASK (0x3F) // Bits [5:0]
+#define MP2722_VBATT_REG_SHIFT 0
+#define MP2722_VBATT_REG_STEP 25
+#define MP2722_VBATT_REG_BASE 3600
+
+/* CONFIG6 (0x06) - OVP, SysMin, Thermal Reg */
+#define MP2722_VIN_OVP_MASK (0xC0) // Bits [7:6]
+#define MP2722_VIN_OVP_SHIFT 6
+#define MP2722_SYS_MIN_MASK (0x38) // Bits [5:3]
+#define MP2722_SYS_MIN_SHIFT 3
+#define MP2722_TREG_MASK (0x07) // Bits [2:0]
+#define MP2722_TREG_SHIFT 0
+
+/* CONFIG7 (0x07) - Watchdog, Termination, Timers */
+#define MP2722_IB_EN_MASK (1 << 7)
+#define MP2722_WATCHDOG_RST_MASK (1 << 6)
+#define MP2722_WATCHDOG_MASK (0x30) // Bits [5:4]
+#define MP2722_WATCHDOG_SHIFT 4
+#define MP2722_EN_TERM_MASK (1 << 3)
+#define MP2722_EN_TMR2X_MASK (1 << 2)
+#define MP2722_CHG_TIMER_MASK (0x03) // Bits [1:0]
+#define MP2722_CHG_TIMER_SHIFT 0
+
+/* CONFIG8 (0x08) - FET Control, Boost Limit */
+#define MP2722_BATTFET_DIS_MASK (1 << 7)
+#define MP2722_BATTFET_DLY_MASK (1 << 6)
+#define MP2722_BATTFET_RST_EN_MASK (1 << 5)
+#define MP2722_OLIM_MASK (0x18) // Bits [4:3]
+#define MP2722_OLIM_SHIFT 3
+#define MP2722_VBOOST_MASK (0x07) // Bits [2:0]
+#define MP2722_VBOOST_SHIFT 0
+
+/* CONFIG9 (0x09) - System Control */
+#define MP2722_CC_CFG_MASK (0x70) // Bits [6:4]
+#define MP2722_CC_CFG_SHIFT 4
+#define MP2722_AUTOOTG_MASK (1 << 3)
+#define MP2722_EN_BOOST_MASK (1 << 2)
+#define MP2722_EN_BUCK_MASK (1 << 1)
+#define MP2722_EN_CHG_MASK (1 << 0)
+
+/* CONFIGA (0x0A) - DPDM, CC Control */
+#define MP2722_AUTODPDM_MASK (1 << 5)
+#define MP2722_FORCEDPDM_MASK (1 << 4)
+#define MP2722_RP_CFG_MASK (0x0C) // Bits [3:2]
+#define MP2722_RP_CFG_SHIFT 2
+#define MP2722_FORCE_CC_MASK (0x03) // Bits [1:0]
+#define MP2722_FORCE_CC_SHIFT 0
+
+/* CONFIGB (0x0B) - HV Adapter */
+#define MP2722_HVEN_MASK (1 << 4)
+#define MP2722_HVUP_MASK (1 << 3)
+#define MP2722_HVDOWN_MASK (1 << 2)
+#define MP2722_HVREQ_MASK (0x03) // Bits [1:0]
+#define MP2722_HVREQ_SHIFT 0
+
+/* CONFIGC (0x0C) - NTC, Battery Low */
+#define MP2722_NTC1_ACTION_MASK (1 << 6)
+#define MP2722_NTC2_ACTION_MASK (1 << 5)
+#define MP2722_BATT_OVP_EN_MASK (1 << 4)
+#define MP2722_BATT_LOW_MASK (0x0C) // Bits [3:2]
+#define MP2722_BATT_LOW_SHIFT 2
+#define MP2722_BOOST_STP_EN_MASK (1 << 1)
+#define MP2722_BOOST_OTP_EN_MASK (1 << 0)
+
+/* CONFIGD (0x0D) - NTC Actions, JEITA */
+#define MP2722_WARM_ACT_MASK (0xC0) // Bits [7:6]
+#define MP2722_WARM_ACT_SHIFT 6
+#define MP2722_COOL_ACT_MASK (0x30) // Bits [5:4]
+#define MP2722_COOL_ACT_SHIFT 4
+#define MP2722_JEITA_VSET_MASK (0x0C) // Bits [3:2]
+#define MP2722_JEITA_VSET_SHIFT 2
+#define MP2722_JEITA_ISET_MASK (0x03) // Bits [1:0]
+#define MP2722_JEITA_ISET_SHIFT 0
+
+/* CONFIGE (0x0E) - NTC Thresholds */
+#define MP2722_VHOT_MASK (0xC0) // Bits [7:6]
+#define MP2722_VHOT_SHIFT 6
+#define MP2722_VWARM_MASK (0x30) // Bits [5:4]
+#define MP2722_VWARM_SHIFT 4
+#define MP2722_VCOOL_MASK (0x0C) // Bits [3:2]
+#define MP2722_VCOOL_SHIFT 2
+#define MP2722_VCOLD_MASK (0x03) // Bits [1:0]
+#define MP2722_VCOLD_SHIFT 0
+
+/* CONFIGF (0x0F) - Input Source Test */
+#define MP2722_VIN_SRC_EN_MASK (1 << 6)
+#define MP2722_IVIN_SRC_MASK (0x3C) // Bits [5:2]
+#define MP2722_IVIN_SRC_SHIFT 2
+#define MP2722_VIN_TEST_MASK (0x03) // Bits [1:0]
+#define MP2722_VIN_TEST_SHIFT 0
+
+/* CONFIG10 (0x10) - Interrupt Mask */
+#define MP2722_MASK_THERM_MASK (1 << 5)
+#define MP2722_MASK_DPM_MASK (1 << 4)
+#define MP2722_MASK_TOPOFF_MASK (1 << 3)
+#define MP2722_MASK_CC_INT_MASK (1 << 2)
+#define MP2722_MASK_BATT_LOW_MASK (1 << 1)
+#define MP2722_MASK_DEBUG_AUDIO_MASK (1 << 0)
+
+/* STATUS11 (0x11) - DPDM Status */
+#define MP2722_DPDM_STAT_MASK (0xF0) // Bits [7:4]
+#define MP2722_DPDM_STAT_SHIFT 4
+#define MP2722_VINDPM_STAT_MASK (1 << 1)
+#define MP2722_IINDPM_STAT_MASK (1 << 0)
+
+/* STATUS12 (0x12) - Power Status */
+#define MP2722_VIN_GD_MASK (1 << 6)
+#define MP2722_VIN_RDY_MASK (1 << 5)
+#define MP2722_LEGACYCABLE_MASK (1 << 4)
+#define MP2722_THERM_STAT_MASK (1 << 3)
+#define MP2722_VSYS_STAT_MASK (1 << 2)
+#define MP2722_WATCHDOG_FAULT_MASK (1 << 1)
+#define MP2722_WATCHDOG_BARK_MASK (1 << 0)
+
+/* STATUS13 (0x13) - Charge & Boost Status */
+#define MP2722_CHG_STAT_MASK (0xE0) // Bits [7:5]
+#define MP2722_CHG_STAT_SHIFT 5
+#define MP2722_BOOST_FAULT_MASK (0x1C) // Bits [4:2]
+#define MP2722_BOOST_FAULT_SHIFT 2
+#define MP2722_CHG_FAULT_MASK (0x03) // Bits [1:0]
+#define MP2722_CHG_FAULT_SHIFT 0
+
+/* STATUS14 (0x14) - NTC & Battery Faults */
+#define MP2722_NTC_MISSING_MASK (1 << 7)
+#define MP2722_BATT_MISSING_MASK (1 << 6)
+#define MP2722_NTC1_FAULT_MASK (0x38) // Bits [5:3]
+#define MP2722_NTC1_FAULT_SHIFT 3
+#define MP2722_NTC2_FAULT_MASK (0x07) // Bits [2:0]
+#define MP2722_NTC2_FAULT_SHIFT 0
+
+/* STATUS15 (0x15) - CC Status */
+#define MP2722_CC1_SNK_STAT_MASK (0xC0) // Bits [7:6]
+#define MP2722_CC1_SNK_STAT_SHIFT 6
+#define MP2722_CC2_SNK_STAT_MASK (0x30) // Bits [5:4]
+#define MP2722_CC2_SNK_STAT_SHIFT 4
+#define MP2722_CC1_SRC_STAT_MASK (0x0C) // Bits [3:2]
+#define MP2722_CC1_SRC_STAT_SHIFT 2
+#define MP2722_CC2_SRC_STAT_MASK (0x03) // Bits [1:0]
+#define MP2722_CC2_SRC_STAT_SHIFT 0
+
+/* STATUS16 (0x16) - Other Status */
+#define MP2722_TOPOFF_ACTIVE_MASK (1 << 6)
+#define MP2722_BFET_STAT_MASK (1 << 5)
+#define MP2722_BATT_LOW_STAT_MASK (1 << 4)
+#define MP2722_OTG_NEED_MASK (1 << 3)
+#define MP2722_VIN_TEST_HIGH_MASK (1 << 2)
+#define MP2722_DEBUGACC_MASK (1 << 1)
+#define MP2722_AUDIOACC_MASK (1 << 0)
