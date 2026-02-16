@@ -1,87 +1,99 @@
-#include "MP2722.h"
-#include "MP2722_platform.h"
-
-#include "driver/i2c_master.h"
-#include "esp_log.h"
+#include <stdio.h>
+#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_log.h"
+#include "driver/i2c_master.h"
 
-static const char *TAG = "main";
+#include "MP2722.h"
 
-// Declare the driver instance globally so it can be used in app_main() and other functions if needed
-MP2722 pmic;
+static const char *TAG = "MAIN";
+
+static constexpr gpio_num_t I2C_SCL_IO = GPIO_NUM_4;
+static constexpr gpio_num_t I2C_SDA_IO = GPIO_NUM_5;
+static constexpr i2c_port_t I2C_NUM = I2C_NUM_0;
+static constexpr uint32_t I2C_FREQ_HZ = 400000;
+
+MP2722 *pmic = nullptr; // Declare a global pointer for the driver instance to be initialized after setting I2C handle
 
 extern "C" void app_main(void)
 {
-    // Standard ESP-IDF setup: initialize I2C bus and device before everything else.
-    i2c_master_bus_config_t bus_cfg = {
-        .i2c_port = I2C_NUM_0,
-        .sda_io_num = GPIO_NUM_21,
-        .scl_io_num = GPIO_NUM_22,
+    /*
+     * --- Usual platform setup (Serial, Analog/Digital I/O, I2C, etc.) ---
+     */
+
+    i2c_master_bus_handle_t bus_handle;
+    i2c_master_dev_handle_t dev_handle;
+    i2c_master_bus_config_t bus_config = {
+        .i2c_port = I2C_NUM,
+        .sda_io_num = I2C_SDA_IO,
+        .scl_io_num = I2C_SCL_IO,
         .clk_source = I2C_CLK_SRC_DEFAULT,
         .glitch_ignore_cnt = 7,
+        .intr_priority = 0,
+        .trans_queue_depth = 0,
+        .flags = {.enable_internal_pullup = true, .allow_pd = false},
     };
-    i2c_master_bus_handle_t bus_handle;
-    ESP_ERROR_CHECK(i2c_new_master_bus(&bus_cfg, &bus_handle));
-    i2c_device_config_t dev_cfg = {
+    ESP_ERROR_CHECK(i2c_new_master_bus(&bus_config, &bus_handle));
+    i2c_device_config_t dev_config = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = 0x3F,
-        .scl_speed_hz = 400000,
+        .device_address = 0x63,
+        .scl_speed_hz = I2C_FREQ_HZ,
+        .scl_wait_us = 0,
+        .flags = {.disable_ack_check = false},
     };
-    i2c_master_dev_handle_t dev_handle;
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_config, &dev_handle));
+    ESP_LOGI(TAG, "I2C initialized successfully");
 
-    // Because this platform uses handles instead of direct function pointers for I2C operations,
-    // we have to pass the initialized I2C device handle to the driver before init().
-    mp2722_platform_set_i2c_handle(dev_handle);
+    /*
+     * --- Driver setup ---
+     */
 
-    // Enable driver debug logging
-    pmic.setLogCallback(MP2722_LogLevel::DEBUG);
+    // Call after usual platform setup (Serial, Analog/Digital I/O, I2C, etc.)
+    mp2722_platform_set_i2c_handle(dev_handle); // Only if your platform uses I2C handle
 
-    // Initialize the driver and check the return status
-    if (pmic.init() != MP2722_Result::OK)
-    {
-        ESP_LOGE(TAG, "PMIC init failed!");
-        return; // halt
-    }
+    // Now that the platform I2C/UART handle/bus is set, create the driver instance
+    pmic = new MP2722();
 
-    // Configure for a typical 1S Li-Po (4.2V, 1A charge)
-    pmic.setChargeVoltage(4200); // mV
-    pmic.setChargeCurrent(1000); // mA
+    // Enable DEBUG driver logging for debugging
+    pmic->setLogCallback(MP2722_LogLevel::DEBUG);
 
-    // This limits current passing through USB, so it must be >= charge current. Recommended is
-    // higher in order to allow for some headroom, as the device itself also consumes current.
-    pmic.setInputCurrentLimit(1500); // mA
+    /*
+     * --- Driver usage ---
+     */
 
-    // Start charging (make sure to have set voltage and current first, or it will return an error)
-    pmic.setCharging(true);
+    // All functions returns MP2722_Result::OK on success and other MP2722_Result on failure
+    pmic->init();                 // In a real application you should only proceed if this returns OK
+    pmic->setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
+    pmic->setChargeCurrent(1000); // mA = 1A @ CC (Constant Current) Phase - Basic config
+    pmic->setCharging(true);      // Enable charger (off by default as basic config is required)
 
+    PowerStatus status{}; // Declare a PowerStatus struct to hold the readout
     while (1)
     {
-        // PowerStatus struct needed to hold the data read from the PMIC
-        MP2722::PowerStatus status;
+        pmic->getStatus(status); // Call from main app loop at some interval to continuously monitor status/faults, etc.
 
-        // Note that because debug logging is enabled, the driver will also be printing RAW status data on getStatus().
-        if (pmic.getStatus(status) == MP2722_Result::OK)
+        // Do whatever with the status (log, update a LED or display, etc.)
+        switch (status.charger_status)
         {
-            // For fully named and decoded fields instead of RAW bits, the PowerStatus struct declared above is used.
-            // See MP2722::PowerStatus struct for details on the various fields you can read.
-            // For example, to check if the battery is hot, you can check the 'NTCState::HOT' like:
-            bool is_hot = status.ntc1_state == MP2722::NTCState::HOT;
-
-            ESP_LOGI(TAG, "Battery is %s", is_hot ? "HOT" : "NOT HOT");
-
-            // Or to check if charging is done:
-            if (status.charger_status == MP2722::ChargerStatus::CHARGE_DONE)
-            {
-                ESP_LOGI(TAG, "Battery fully charged");
-            }
+        case ChargerStatus::NOT_CHARGING:
+            // Handle not charging state
+            ESP_LOGI(TAG, "Charger Status: Not Charging.");
+            break;
+        case ChargerStatus::CHARGE_DONE:
+            // Handle charge done state
+            ESP_LOGW(TAG, "Charger Status: Charge Done!");
+            break;
+        default:
+            // Handle charging state (pre-charge, fast charge, etc.)
+            ESP_LOGI(TAG, "Charger Status: Charging...");
+            break;
         }
 
         // Kick the watchdog to prevent it from resetting the device (if enabled, which it is by default)
         pmic.watchdogKick(); // Watchdog is a heartbeat to let the PMIC know the system is still alive.
 
-        // Wait 1s before the next status check
+        // Delay for 1 second interval
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

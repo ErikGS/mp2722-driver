@@ -1,63 +1,66 @@
 #include <Wire.h>
 #include "MP2722.h"
 
-// Declare the driver instance globally so it can be used in both setup() and loop()
+// Declare the driver instance globally so it can be used in setup(), loop() and other functions if needed
+// Note: For Arduino, we can create the instance directly as a global variable since we don't need dynamic allocation.
+//      This is possible because I2C handle is not used on this platform.
 MP2722 pmic;
+
+// Declare a PowerStatus struct to hold the readout
+PowerStatus status{};
 
 void setup()
 {
-    // Standard Arduino setup: initialize Serial and Wire before everything else.
+    /*
+     * --- Usual platform setup (Serial, Analog/Digital I/O, I2C, etc.) ---
+     */
     Serial.begin(115200);
     Wire.begin();
 
-    // Enable driver logging with a specific DEBUG log level (optional, default is INFO)
+    /*
+     * --- Driver setup ---
+     */
+
+    // Enable DEBUG driver logging for debugging
     pmic.setLogCallback(MP2722_LogLevel::DEBUG);
 
-    // Initialize the driver and check the return status
-    if (pmic.init() != MP2722_Result::OK)
-    {
-        Serial.println("[E] MP2722: PMIC init failed!");
-        while (1)
-            ; // halt
-    }
+    /*
+     * --- Driver usage ---
+     */
 
-    // Configure for a typical 1S Li-Po (4.2V, 1A charge)
-    pmic.setChargeVoltage(4200); // mV
-    pmic.setChargeCurrent(1000); // mA
-
-    // This limits currrent passing through USB, so it must be >= charge current. Recommended is
-    // higher in order to allow for some headroom, as the device itself also consumes current.
-    pmic.setInputCurrentLimit(1500); // mA
-
-    // Start charging (make sure to have set voltage and current first, or it will return an error)
-    pmic.setCharging(true);
+    // All functions returns MP2722_Result::OK on success and other MP2722_Result on failure
+    pmic.init();                 // In a real application you should only proceed if this returns OK
+    pmic.setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
+    pmic.setChargeCurrent(1000); // mA = 1A @ CC (Constant Current) Phase - Basic config
+    pmic.setCharging(true);      // Enable charger (off by default as basic config is required)
 }
 
 void loop()
 {
-    // PowerStatus struct needed to hold the data read from the PMIC
-    MP2722::PowerStatus status;
+    // Call from main app loop at some interval to continuously monitor status/faults, etc.
+    // Returns MP2722_Result::OK on success and other MP2722_Result on failure
+    pmic.getStatus(status);
 
-    // Note that because debug logging is enabled, the driver will also be printing RAW status data on getStatus().
-    if (pmic.getStatus(status) == MP2722_Result::OK)
+    // Do whatever with the status (log, update a LED or display, etc.)
+    switch (status.charger_status)
     {
-        // For fully named and decoded fields instead of RAW bits, the PowerStatus struct declared above is used.
-        // See MP2722::PowerStatus struct for details on the various fields you can read.
-        // For example, to check if the battery is hot, you can check the 'NTCState::HOT' like:
-        bool is_hot = status.ntc1_state == MP2722::NTCState::HOT;
-
-        Serial.println("[I] MP2722: Battery is " + String(is_hot ? "HOT" : "NOT HOT"));
-
-        // Or to check if charging is done:
-        if (status.charger_status == MP2722::ChargerStatus::CHARGE_DONE)
-        {
-            Serial.println("[I] MP2722: Battery fully charged");
-        }
+    case ChargerStatus::NOT_CHARGING:
+        // Handle not charging state
+        Serial.println("Charger Status: Not Charging.");
+        break;
+    case ChargerStatus::CHARGE_DONE:
+        // Handle charge done state
+        Serial.println("Charger Status: Charge Done!");
+        break;
+    default:
+        // Handle charging state (pre-charge, fast charge, etc.)
+        Serial.println("Charger Status: Charging...");
+        break;
     }
 
     // Kick the watchdog to prevent it from resetting the device (if enabled, which it is by default)
     pmic.watchdogKick(); // Watchdog is a heartbeat to let the PMIC know the system is still alive.
 
-    // Wait 1s before the next status check
+    // delay for 1 second interval
     delay(1000);
 }
