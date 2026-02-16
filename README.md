@@ -202,20 +202,21 @@ git submodule add https://github.com/erikgs/mp2722-driver.git libs/driver_mp2722
 
 The `getStatus(PowerStatus &status)` method populates the following fields:
 
-| Field                  | Type                                    | Description                                                                 |
-| ---------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
-| `legacy_src_type`      | [LegacyInputSrcType](src/MP2722_defs.h) | Detected input source (USB SDP, DCP, CDP, etc.)                             |
-| `vin_good`             | `bool`                                  | Input source is valid                                                       |
-| `charger_status`       | [ChargerStatus](src/MP2722_defs.h)      | Charging state (Not Charging, Pre-charge, Fast Charge, Done, etc.)          |
-| `charger_fault`        | [ChargerFault](src/MP2722_defs.h)       | Fault type (None, Input OVP, Thermal Shutdown, Timer Expired, Battery OVP)  |
-| `boost_fault`          | [BoostFault](src/MP2722_defs.h)         | Boost mode fault (Overload, OVP, OTP, Battery Low)                          |
-| `fault_battery`        | `bool`                                  | Battery missing or connection fault                                         |
-| `fault_ntc`            | `bool`                                  | NTC thermistor missing or fault                                             |
-| `ntc1_state`           | [NTCState](src/MP2722_defs.h)           | JEITA state for NTC1 (Normal, Warm, Cool, Cold, Hot)                        |
-| `cc1_snk_stat`         | [CCSinkStatus](src/MP2722_defs.h)       | USB-C CC1 detection (vRa, vRd-USB, vRd-1.5A, vRd-3.0A)                      |
-| `batt_low_stat`        | `bool`                                  | Battery voltage is below low threshold                                      |
-| `thermal_regulation`   | `bool`                                  | IC is throttling charge current due to heat                                 |
-| `input_dpm_regulation` | `bool`                                  | IC is throttling charge current due to input voltage/current limit (VINDPM) |
+| Field                           | Type                                                                                                                                        | Description                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `legacy_src_type`               | [LegacyInputSrcType](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L71C12-L71C30) | Detected input source (USB SDP, DCP, CDP, etc.)                             |
+| `vin_good`                      | `bool`                                                                                                                                      | Input source is valid                                                       |
+| `charger_status`                | [ChargerStatus](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L86)                | Charging state (Not Charging, Pre-charge, Fast Charge, Done, etc.)          |
+| `charger_fault`                 | [ChargerFault](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L96)                 | Fault type (None, Input OVP, Thermal Shutdown, Timer Expired, Battery OVP)  |
+| `boost_fault`                   | [BoostFault](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L104)                  | Boost mode fault (Overload, OVP, OTP, Battery Low)                          |
+| `fault_battery`                 | `bool`                                                                                                                                      | Battery missing or connection fault                                         |
+| `fault_ntc`                     | `bool`                                                                                                                                      | NTC thermistor missing or fault                                             |
+| `ntc1_state`                    | [NTCState](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L113)                    | JEITA state for NTC1 (Normal, Warm, Cool, Cold, Hot)                        |
+| `cc1_snk_stat` / `cc2_snk_stat` | [CCSinkStatus](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L122)                | USB-C CC1/CC2 sink detection (vRa, vRd-USB, vRd-1.5A, vRd-3.0A)             |
+| `cc1_src_stat` / `cc2_src_stat` | [CCSourceStatus](https://github.com/ErikGS/mp2722-driver/blob/dd3834e20c1b6c372e6c757a85054296a46d38d6/src/MP2722_defs.h#L130C12-L130C26)   | USB-C CC1/CC2 source detection (vOpen, vRd, vRa)                            |
+| `batt_low_stat`                 | `bool`                                                                                                                                      | Battery voltage is below low threshold                                      |
+| `thermal_regulation`            | `bool`                                                                                                                                      | IC is throttling charge current due to heat                                 |
+| `input_dpm_regulation`          | `bool`                                                                                                                                      | IC is throttling charge current due to input voltage/current limit (VINDPM) |
 
 ## Error Handling
 

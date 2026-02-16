@@ -121,17 +121,17 @@ enum class NTCState : uint8_t
 
 enum class CCSinkStatus : uint8_t
 {
-    VRa = 0b00,     // CC detects vRa
-    VRdUSB = 0b01,  // CC detects vRd-USB
-    VRd1_5A = 0b10, // CC detects vRd-1.5
-    VRd3_0A = 0b11, // CC detects vRd-3.0
+    vRa = 0b00,      // CC detects vRa
+    vRd_USB = 0b01,  // CC detects vRd-USB
+    vRd_1_5A = 0b10, // CC detects vRd-1.5
+    vRd_3_0A = 0b11, // CC detects vRd-3.0
 };
 
 enum class CCSourceStatus : uint8_t
 {
-    VOpen = 0b00, // CC is vOPEN
-    VRd = 0b01,   // CC detects vRd
-    VRa = 0b10,   // CC detects vRa
+    vOPEM = 0b00, // CC is vOPEN
+    vRd = 0b01,   // CC detects vRd
+    vRa = 0b10,   // CC detects vRa
 };
 
 // ============================================================================
