@@ -1,10 +1,15 @@
-// STM32 HAL user code
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "stm32_hal_conf.h"
+
 #include "MP2722.h"
-#include "stm32f446_hal.h" // adjust for your STM32 family (f1xx, l4xx, h7xx, etc.)
-#include <cstdio>
 
 extern I2C_HandleTypeDef hi2c1;   // defined by CubeMX in main.c
 extern UART_HandleTypeDef huart2; // for logging via UART
+
+/// --- Custom I2C ---
 
 int stm32_i2c_write(uint8_t addr, uint8_t reg, const uint8_t *data, size_t len)
 {
@@ -24,6 +29,8 @@ int stm32_i2c_read(uint8_t addr, uint8_t reg, uint8_t *data, size_t len)
         data, len, HAL_MAX_DELAY);
     return (ret == HAL_OK) ? 0 : -1;
 }
+
+/// --- Custom logger ---
 
 void stm32_log(MP2722_LogLevel level, const char *msg)
 {
@@ -52,45 +59,16 @@ void stm32_log(MP2722_LogLevel level, const char *msg)
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, n, HAL_MAX_DELAY);
 }
 
-// --- Usage in main.cpp ---
+// --- Driver ---
 
-MP2722_I2C i2c = {stm32_i2c_write, stm32_i2c_read};
-MP2722 pmic(i2c);
+// Pass the custom I2C to the driver constructor
+// It can now be created globally because we already gave the custom I2C functions access to the handles
+// But you can still use a pointer if you need or prefer
+MP2722 pmic({stm32_i2c_write, stm32_i2c_read});
 
-int main(void)
-{
-    HAL_Init();
-    SystemClock_Config();
-    MX_GPIO_Init();
-    MX_I2C1_Init();
-    MX_USART2_UART_Init();
+// Pass the custom logger to the driver log callback
+pmic.setLogCallback(MP2722_LogLevel::DEBUG, {stm32_log});
 
-    pmic.setLogCallback(stm32_log, MP2722_LogLevel::DEBUG);
+/// --- Actual driver usage is unchanged so the rest is the same as standard examples ---
 
-    if (pmic.init() != MP2722_Result::OK)
-    {
-        stm32_log(MP2722_LogLevel::ERROR, "PMIC init failed!");
-        Error_Handler();
-    }
-
-    // Configure for a typical 1S Li-Po (4.2V, 1A charge)
-    pmic.setChargeVoltage(4200);
-    pmic.setChargeCurrent(1000);
-    pmic.setInputCurrentLimit(1500);
-    pmic.setCharging(true);
-
-    while (1)
-    {
-        MP2722::PowerStatus status;
-        if (pmic.getStatus(status) == MP2722_Result::OK)
-        {
-            if (status.charger_status == MP2722::ChargerStatus::CHARGE_DONE)
-            {
-                stm32_log(MP2722_LogLevel::INFO, "Battery fully charged");
-            }
-        }
-
-        pmic.watchdogKick();
-        HAL_Delay(1000);
-    }
-}
+// pmic.init(); etc...

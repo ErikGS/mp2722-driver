@@ -1,4 +1,9 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
 #include <Wire.h>
+
 #include "MP2722.h"
 
 // Declare the driver instance globally so it can be used in setup(), loop() and other functions if needed

@@ -1,5 +1,9 @@
-// Arduino user code
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
 #include <Wire.h>
+
 #include "MP2722.h"
 
 int arduino_i2c_write(uint8_t addr, uint8_t reg, const uint8_t *data, size_t len)

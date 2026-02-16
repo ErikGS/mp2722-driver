@@ -1,7 +1,10 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "stm32_hal_conf.h"
+
 #include "MP2722.h"
-#include "MP2722_platform.h"
-#include <cstdio>
-#include <cstring>
 
 // Defined in main.c (CubeMX generated)
 extern I2C_HandleTypeDef hi2c1;
@@ -79,7 +82,7 @@ int main(void)
         }
 
         // Kick the watchdog to prevent it from resetting the device (if enabled, which it is by default)
-        pmic->watchdogKick(); // Watchdog is a heartbeat to let the PMIC know the system is still alive.
+        pmic->watchdogKick(); // Watchdog is a heartbeat to let the PMIC know the system is still alive
 
         // Delay for 1 second interval
         HAL_Delay(1000);

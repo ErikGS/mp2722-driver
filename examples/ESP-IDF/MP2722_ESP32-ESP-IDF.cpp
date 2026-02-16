@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
