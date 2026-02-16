@@ -16,19 +16,26 @@ MP2722::MP2722(const MP2722_I2C &i2c, uint8_t address)
     }
 }
 
-void MP2722::setLogCallback(MP2722_LogCallback callback, MP2722_LogLevel level)
+void MP2722::setLogCallback(MP2722_LogLevel level, MP2722_LogCallback callback)
 {
-    _logLevel = level;
-    if (callback)
+    if (_logLevel == MP2722_LogLevel::NONE)
     {
-        _logCallback = callback;
+        _logCallback = nullptr;
         return;
     }
 
-    // Try to get a preset logger if not provided
-    const MP2722_LogCallback platform_log = mp2722_get_platform_log();
-    if (platform_log)
-        _logCallback = platform_log;
+    _logLevel = level;
+
+    if (!_logCallback)
+    {
+        // Try to get a preset logger if not provided
+        const MP2722_LogCallback platform_log = mp2722_get_platform_log();
+        if (platform_log)
+            _logCallback = platform_log;
+        return;
+    }
+
+    _logCallback = callback;
 }
 
 void MP2722::log(MP2722_LogLevel level, const char *fmt, ...)
@@ -104,12 +111,19 @@ MP2722_Result MP2722::init()
         return ret;
     }
 
+    _initialized = true;
+
     // If these bits are not 000, PMIC will set a fixed limit and ignore values defined from setInputCurrentLimit()
     // or from input source detection. So we ensure it is set to 000 by default.
     // CONFIG1 bits [7:5] - set IIN_MODE to 000 (Follow IIN_LIM)
     uint8_t mode = 0 << MP2722_IIN_MODE_SHIFT;
     ret = updateReg(MP2722_REG_CONFIG1, MP2722_IIN_MODE_MASK, mode);
-
+    if (ret != MP2722_Result::OK)
+    {
+        _initialized = false;
+        log(MP2722_LogLevel::ERROR, "Failed to set IIN_MODE to Follow IIN_LIM");
+        return ret;
+    }
     // SAFETY CRITICAL:
     // Driver initial state DISABLES Charging by default, as charge parameters must be explicitly adjusted to any
     // specific battery first. Higher current and voltage limits than what the battery can handle will likely
@@ -120,26 +134,46 @@ MP2722_Result MP2722::init()
     // path control logic has to be explicitly handled according to the specific needs of the application.
     ret = setCharging(false);
     if (ret != MP2722_Result::OK)
+    {
+        _initialized = false;
         log(MP2722_LogLevel::ERROR, "Failed to disable charging");
+        return ret;
+    }
 
     ret = setAutoDpDmDetection(true);
     if (ret != MP2722_Result::OK)
+    {
+        _initialized = false;
         log(MP2722_LogLevel::ERROR, "Failed to enable Auto D+/D- Detection");
+        return ret;
+    }
 
     ret = setBuck(true);
     if (ret != MP2722_Result::OK)
+    {
+        _initialized = false;
         log(MP2722_LogLevel::ERROR, "Failed to enable Buck Converter");
+        return ret;
+    }
 
     ret = setAutoOTG(true);
     if (ret != MP2722_Result::OK)
+    {
+        _initialized = false;
         log(MP2722_LogLevel::ERROR, "Failed to enable Auto OTG");
+        return ret;
+    }
 
     ret = setBoostStopOnBattLow(true);
     if (ret != MP2722_Result::OK)
+    {
+        _initialized = false;
         log(MP2722_LogLevel::ERROR, "Failed to enable Boost Stop on Battery Low");
+        return ret;
+    }
 
     log(MP2722_LogLevel::INFO, "MP2722 Initialized. CONFIG0=0x%02X", val);
-    return ret;
+    return MP2722_Result::OK;
 }
 
 MP2722_Result MP2722::reset()
@@ -149,6 +183,12 @@ MP2722_Result MP2722::reset()
 
 MP2722_Result MP2722::setChargeCurrent(uint16_t current_ma)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     if (current_ma < 80)
         current_ma = 80;
     if (current_ma > 5000)
@@ -161,17 +201,23 @@ MP2722_Result MP2722::setChargeCurrent(uint16_t current_ma)
     MP2722_Result ret = updateReg(MP2722_REG_CONFIG2, MP2722_ICC_MASK, steps);
     if (ret != MP2722_Result::OK)
     {
-        isChargeCurrentSet = false;
+        _isChargeCurrentSet = false;
         return ret;
     }
 
-    isChargeCurrentSet = true;
+    _isChargeCurrentSet = true;
     log(MP2722_LogLevel::DEBUG, "Set Charge Current: %dmA (0x%02X)", current_ma, steps);
     return ret;
 }
 
 MP2722_Result MP2722::setChargeVoltage(uint16_t voltage_mv)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     if (voltage_mv < 3600)
         voltage_mv = 3600;
     if (voltage_mv > 4600)
@@ -186,17 +232,23 @@ MP2722_Result MP2722::setChargeVoltage(uint16_t voltage_mv)
     MP2722_Result ret = updateReg(MP2722_REG_CONFIG5, MP2722_VBATT_REG_MASK, reg_val);
     if (ret != MP2722_Result::OK)
     {
-        isChargeVoltageSet = false;
+        _isChargeVoltageSet = false;
         return ret;
     }
 
-    isChargeVoltageSet = true;
+    _isChargeVoltageSet = true;
     log(MP2722_LogLevel::DEBUG, "Set Charge Voltage: %dmV (0x%02X)", voltage_mv, steps);
     return ret;
 }
 
 MP2722_Result MP2722::setInputCurrentLimit(uint16_t current_ma)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     if (current_ma < 100)
         current_ma = 100;
     if (current_ma > 3200)
@@ -212,18 +264,36 @@ MP2722_Result MP2722::setInputCurrentLimit(uint16_t current_ma)
 
 MP2722_Result MP2722::forceDpDmDetection()
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     return updateReg(MP2722_REG_CONFIGA, MP2722_FORCEDPDM_MASK, MP2722_FORCEDPDM_MASK);
 }
 
 MP2722_Result MP2722::setAutoDpDmDetection(bool enable)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     uint8_t val = enable ? MP2722_AUTODPDM_MASK : 0;
     return updateReg(MP2722_REG_CONFIGA, MP2722_AUTODPDM_MASK, val);
 }
 
 MP2722_Result MP2722::setCharging(bool enable)
 {
-    if (enable && !getIsSafeToCharge())
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
+    if (enable && (!_isChargeVoltageSet || !_isChargeCurrentSet))
     {
         log(MP2722_LogLevel::ERROR, "Charge FAULT: Voltage and Current must be adjusted first!");
         return MP2722_Result::INVALID_STATE;
@@ -235,30 +305,60 @@ MP2722_Result MP2722::setCharging(bool enable)
 
 MP2722_Result MP2722::setBuck(bool enable)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     uint8_t val = enable ? MP2722_EN_BUCK_MASK : 0;
     return updateReg(MP2722_REG_CONFIG9, MP2722_EN_BUCK_MASK, val);
 }
 
 MP2722_Result MP2722::setBoost(bool enable)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     uint8_t val = enable ? MP2722_EN_BOOST_MASK : 0;
     return updateReg(MP2722_REG_CONFIG9, MP2722_EN_BOOST_MASK, val);
 }
 
 MP2722_Result MP2722::setBoostStopOnBattLow(bool enable)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     uint8_t val = enable ? MP2722_BOOST_STP_EN_MASK : 0;
     return updateReg(MP2722_REG_CONFIGC, MP2722_BOOST_STP_EN_MASK, val);
 }
 
 MP2722_Result MP2722::setAutoOTG(bool enable)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     uint8_t val = enable ? MP2722_AUTOOTG_MASK : 0;
     return updateReg(MP2722_REG_CONFIG9, MP2722_AUTOOTG_MASK, val);
 }
 
 MP2722_Result MP2722::setStatAsAnalogIB(bool enable, bool charging_only)
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     uint8_t val = enable ? MP2722_EN_STAT_IB_MASK : 0;
     MP2722_Result ret = updateReg(MP2722_REG_CONFIG0, MP2722_EN_STAT_IB_MASK, val);
     if (ret != MP2722_Result::OK)
@@ -270,12 +370,24 @@ MP2722_Result MP2722::setStatAsAnalogIB(bool enable, bool charging_only)
 
 MP2722_Result MP2722::enterShippingMode()
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     log(MP2722_LogLevel::WARN, "Entering Shipping Mode (BATFET Off)");
     return updateReg(MP2722_REG_CONFIG8, MP2722_BATTFET_DIS_MASK, MP2722_BATTFET_DIS_MASK);
 }
 
 MP2722_Result MP2722::watchdogKick()
 {
+    if (!_initialized)
+    {
+        log(MP2722_LogLevel::ERROR, "init() must be called first");
+        return MP2722_Result::INVALID_STATE;
+    }
+
     return updateReg(MP2722_REG_CONFIG7, MP2722_WATCHDOG_RST_MASK, MP2722_WATCHDOG_RST_MASK);
 }
 

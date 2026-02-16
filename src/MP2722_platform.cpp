@@ -125,7 +125,7 @@ static void espidf_log(MP2722_LogLevel level, const char *msg)
 
 static const MP2722_I2C _platform_i2c = {espidf_i2c_write, espidf_i2c_read};
 
-const MP2722_I2C *mp2722_platform_i2c()
+const MP2722_I2C *mp2722_get_platform_i2c()
 {
     return &_platform_i2c;
 }
@@ -209,7 +209,7 @@ static void stm32_log(MP2722_LogLevel level, const char *msg)
 
 static const MP2722_I2C _platform_i2c = {stm32_i2c_write, stm32_i2c_read};
 
-const MP2722_I2C *mp2722_platform_i2c()
+const MP2722_I2C *mp2722_get_platform_i2c()
 {
     return &_platform_i2c;
 }
@@ -296,7 +296,7 @@ static void stderr_log(MP2722_LogLevel level, const char *msg)
     fprintf(stderr, "%s MP2722: %s\n", prefix, msg);
 }
 
-const MP2722_I2C *mp2722_platform_i2c()
+const MP2722_I2C *mp2722_get_platform_i2c()
 {
     return (_i2c_fd >= 0) ? &_platform_i2c : nullptr;
 }
@@ -337,7 +337,7 @@ static void stderr_log(MP2722_LogLevel level, const char *msg)
     fprintf(stderr, "%s MP2722: %s\n", prefix, msg);
 }
 
-const MP2722_I2C *mp2722_platform_i2c()
+const MP2722_I2C *mp2722_get_platform_i2c()
 {
     return nullptr;
 }

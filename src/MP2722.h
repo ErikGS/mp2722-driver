@@ -25,12 +25,12 @@ public:
     ~MP2722() = default;
 
     /**
-     * @brief Set a logging callback. Pass nullptr to disable logging.
+     * @brief Set a logging callback. Pass MP2722_LogLevel::NONE to disable logging.
      *
-     * @param callback  Function pointer matching MP2722_LogCallback signature
      * @param level     Maximum log level to emit (default: INFO)
+     * @param callback  Function pointer matching MP2722_LogCallback signature
      */
-    void setLogCallback(MP2722_LogCallback callback = {}, MP2722_LogLevel level = MP2722_LogLevel::INFO);
+    void setLogCallback(MP2722_LogLevel level = MP2722_LogLevel::INFO, MP2722_LogCallback callback = nullptr);
 
     /**
      * @brief Initialize the driver and check device presence
@@ -174,15 +174,9 @@ private:
     MP2722_LogCallback _logCallback = {};
     MP2722_LogLevel _logLevel = MP2722_LogLevel::INFO;
 
-    bool isChargeCurrentSet = false;
-    bool isChargeVoltageSet = false;
-
-    /**
-     * @brief Helper to check the if safety-critical charge parameters have been set (charge current and voltage)
-     *
-     * @return true if both charge current and voltage have been set, false otherwise
-     */
-    bool getIsSafeToCharge() const { return isChargeCurrentSet && isChargeVoltageSet; }
+    bool _initialized = false;
+    bool _isChargeCurrentSet = false;
+    bool _isChargeVoltageSet = false;
 
     MP2722_Result writeReg(uint8_t reg, uint8_t val);
     MP2722_Result readRegs(uint8_t start_reg, uint8_t *buf, size_t len);
