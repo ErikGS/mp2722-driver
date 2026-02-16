@@ -75,7 +75,7 @@ MP2722_LogCallback mp2722_get_platform_log()
 
 #include "driver/i2c_master.h"
 #include "esp_log.h"
-#include <cstring>
+#include <string.h>
 
 static const char *TAG = "MP2722";
 static i2c_master_dev_handle_t _dev_handle = nullptr;
@@ -140,7 +140,9 @@ MP2722_LogCallback mp2722_get_platform_log()
 // ============================================================================
 #elif defined(HAL_I2C_MODULE_ENABLED)
 
-#include <cstdio>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 
 static I2C_HandleTypeDef *_hi2c = nullptr;
 static UART_HandleTypeDef *_huart = nullptr;
@@ -224,7 +226,9 @@ MP2722_LogCallback mp2722_get_platform_log()
 // ============================================================================
 #elif defined(__linux__)
 
-#include <cstdio>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -312,6 +316,9 @@ MP2722_LogCallback mp2722_get_platform_log()
 #elif defined(_WIN32) || defined(__APPLE__)
 
 #include <cstdio>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 
 static void stderr_log(MP2722_LogLevel level, const char *msg)
 {

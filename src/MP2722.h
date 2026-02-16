@@ -2,7 +2,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <cstdio>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include "MP2722_defs.h"
 #include "MP2722_regs.h"

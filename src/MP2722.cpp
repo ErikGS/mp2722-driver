@@ -1,9 +1,5 @@
 #include "MP2722.h"
 
-#include <cstdarg>
-#include <cstdio>
-#include <algorithm>
-
 MP2722::MP2722(const MP2722_I2C &i2c, uint8_t address)
     : _i2c(i2c), _address(address)
 {
@@ -18,7 +14,7 @@ MP2722::MP2722(const MP2722_I2C &i2c, uint8_t address)
 
 void MP2722::setLogCallback(MP2722_LogLevel level, MP2722_LogCallback callback)
 {
-    if (_logLevel == MP2722_LogLevel::NONE)
+    if (level == MP2722_LogLevel::NONE)
     {
         _logCallback = nullptr;
         return;
@@ -26,7 +22,7 @@ void MP2722::setLogCallback(MP2722_LogLevel level, MP2722_LogCallback callback)
 
     _logLevel = level;
 
-    if (!_logCallback)
+    if (!callback)
     {
         // Try to get a preset logger if not provided
         const MP2722_LogCallback platform_log = mp2722_get_platform_log();
