@@ -139,7 +139,7 @@ MP2722_LogCallback mp2722_get_platform_log()
 // ============================================================================
 #elif defined(HAL_I2C_MODULE_ENABLED)
 
-#if __has_include("main.h")
+#elif __has_include("main.h")
 #include "main.h" // CubeMX projects usually include the correct stm32xxxx_hal.h here
 #elif __has_include("stm32f4xx_hal.h")
 #include "stm32f4xx_hal.h"
