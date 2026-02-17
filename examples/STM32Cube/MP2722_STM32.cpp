@@ -6,9 +6,17 @@
 
 #include "MP2722.h"
 
-// Defined in main.c (CubeMX generated)
-extern I2C_HandleTypeDef hi2c1;
-extern UART_HandleTypeDef huart2;
+/* -----------------------------------------------------------------------
+ * In a real project these are CubeMX-generated globals and functions.
+ * We provide stubs here so the example compiles stand-alone for CI.
+ * ----------------------------------------------------------------------- */
+I2C_HandleTypeDef hi2c1;
+UART_HandleTypeDef huart2;
+static void SystemClock_Config(void) { /* CubeMX generated */ }
+static void MX_GPIO_Init(void) { /* CubeMX generated */ }
+static void MX_I2C1_Init(void) { /* CubeMX generated */ }
+static void MX_USART2_UART_Init(void) { /* CubeMX generated */ }
+/* ----------------------------------------------------------------------- */
 
 // Declare a global pointer for the driver instance to be initialized after setting I2C handle
 MP2722 *pmic = nullptr;

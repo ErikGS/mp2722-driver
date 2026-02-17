@@ -36,7 +36,7 @@ jobs:
           - board: nucleo_f446re
             framework: stm32cube
             example: examples/STM32Cube/MP2722_STM32.cpp
-            build_flags: "-I$GITHUB_WORKSPACE/examples/STM32Cube -DSTM32F4"
+            build_flags: "-I$GITHUB_WORKSPACE/examples/STM32Cube -DSTM32F446xx"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
