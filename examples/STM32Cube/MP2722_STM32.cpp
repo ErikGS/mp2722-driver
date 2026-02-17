@@ -5,50 +5,13 @@
 #include "stm32f4xx_hal.h"
 
 #include "MP2722.h"
+#include "MP2722_platform.h"
 
 // Declare a global pointer for the driver instance to be initialized after setting I2C handle
 MP2722 *pmic = nullptr;
 
 static I2C_HandleTypeDef hi2c1;
 static UART_HandleTypeDef huart2;
-
-// --------------------------------------------------------------------------
-// CI stub peripheral-init functions
-// In a real CubeMX project these are auto-generated in main.c.
-// Here they are minimal stubs so the example compiles stand-alone.
-static void SystemClock_Config(void) { /* Configure clocks for your board */ }
-static void MX_GPIO_Init(void)
-{
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-}
-static void MX_I2C1_Init(void)
-{
-    __HAL_RCC_I2C1_CLK_ENABLE();
-    hi2c1.Instance = I2C1;
-    hi2c1.Init.ClockSpeed = 400000;
-    hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-    hi2c1.Init.OwnAddress1 = 0;
-    hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-    hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-    hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-    HAL_I2C_Init(&hi2c1);
-}
-static void MX_USART2_UART_Init(void)
-{
-    __HAL_RCC_USART2_CLK_ENABLE();
-    huart2.Instance = USART2;
-    huart2.Init.BaudRate = 115200;
-    huart2.Init.WordLength = UART_WORDLENGTH_8B;
-    huart2.Init.StopBits = UART_STOPBITS_1;
-    huart2.Init.Parity = UART_PARITY_NONE;
-    huart2.Init.Mode = UART_MODE_TX_RX;
-    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-    HAL_UART_Init(&huart2);
-}
-// --------------------------------------------------------------------------
 
 void app_log(const char *msg)
 {
@@ -65,7 +28,7 @@ int main(void)
 
     // Standard STM32 setup: initialize HAL, clocks, and peripherals before everything else.
     HAL_Init();
-    // SystemClock_Config();
+    SystemClock_Config();
     MX_GPIO_Init();
     MX_I2C1_Init();
     MX_USART2_UART_Init();
