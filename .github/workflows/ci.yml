@@ -28,6 +28,9 @@ jobs:
             framework: arduino
             example: examples/Arduino/MP2722_Arduino.ino
           - board: esp32dev
+            framework: arduino
+            example: examples/ESP-IDF/MP2722_ESP32-ESP-IDF.cpp
+          - board: esp32dev
             framework: espidf
             example: examples/ESP-IDF/MP2722_ESP32-ESP-IDF.cpp
           - board: nucleo_f446re
@@ -39,4 +42,4 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install platformio
-      - run: pio ci --lib="." --board=${{ matrix.board }} --project-option="lib_ldf_mode=deep+" "${{ matrix.example }}"
+      - run: pio ci --lib="." --board=${{ matrix.board }} --project-option="framework=${{ matrix.framework }}" --project-option="lib_ldf_mode=deep+" "${{ matrix.example }}"
