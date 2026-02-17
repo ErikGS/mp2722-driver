@@ -36,16 +36,7 @@ MP2722_LogCallback mp2722_get_platform_log();
 void mp2722_platform_set_i2c_handle(i2c_master_dev_handle_t handle);
 
 #elif defined(HAL_I2C_MODULE_ENABLED)
-/*
- * STM32 HAL platform support.
- *
- * By the time HAL_I2C_MODULE_ENABLED is defined, the user's project has
- * already included the correct family HAL (via stm32f4xx_hal_conf.h or
- * equivalent).  We do NOT include any stm32*_hal.h here — the user's
- * build system / CubeMX project is responsible for that.
- *
- * This keeps the driver family-agnostic with zero maintenance overhead.
- */
+#include "stm32_hal_conf.h"
 
 /**
  * @brief Set the STM32 HAL I2C handle
