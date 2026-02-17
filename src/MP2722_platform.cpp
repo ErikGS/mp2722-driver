@@ -143,6 +143,22 @@ MP2722_LogCallback mp2722_get_platform_log()
 #include MP2722_STM32_HAL_HEADER
 #elif __has_include("main.h")
 #include "main.h" // CubeMX projects usually include the correct stm32xxxx_hal.h here
+#elif __has_include("stm32f4xx_hal.h")
+#include "stm32f4xx_hal.h"
+#elif __has_include("stm32f1xx_hal.h")
+#include "stm32f1xx_hal.h"
+#elif __has_include("stm32f0xx_hal.h")
+#include "stm32f0xx_hal.h"
+#elif __has_include("stm32g0xx_hal.h")
+#include "stm32g0xx_hal.h"
+#elif __has_include("stm32g4xx_hal.h")
+#include "stm32g4xx_hal.h"
+#elif __has_include("stm32h7xx_hal.h")
+#include "stm32h7xx_hal.h"
+#elif __has_include("stm32l0xx_hal.h")
+#include "stm32l0xx_hal.h"
+#elif __has_include("stm32l4xx_hal.h")
+#include "stm32l4xx_hal.h"
 #else
 #error "STM32 HAL header not found. Define MP2722_STM32_HAL_HEADER, e.g. -DMP2722_STM32_HAL_HEADER=\"stm32f4xx_hal.h\""
 #endif

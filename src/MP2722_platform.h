@@ -29,7 +29,7 @@ MP2722_LogCallback mp2722_get_platform_log();
 
 #if defined(ESP_PLATFORM) && !defined(ARDUINO)
 
-using i2c_master_dev_handle_t = struct i2c_master_dev_handle_t;
+struct i2c_master_dev_handle_t;
 
 /**
  * @brief Set the ESP-IDF I2C device handle
@@ -39,8 +39,8 @@ void mp2722_platform_set_i2c_handle(i2c_master_dev_handle_t handle);
 
 #elif defined(HAL_I2C_MODULE_ENABLED)
 
-using I2C_HandleTypeDef = struct __I2C_HandleTypeDef;
-using UART_HandleTypeDef = struct __UART_HandleTypeDef;
+struct __I2C_HandleTypeDef;
+struct __UART_HandleTypeDef;
 
 /**
  * @brief Set the STM32 HAL I2C handle
