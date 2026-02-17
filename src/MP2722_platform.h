@@ -36,6 +36,13 @@ MP2722_LogCallback mp2722_get_platform_log();
 void mp2722_platform_set_i2c_handle(i2c_master_dev_handle_t handle);
 
 #elif defined(HAL_I2C_MODULE_ENABLED)
+|| defined(STM32F0) || defined(STM32F1) || defined(STM32F2) || defined(STM32F3) ||
+    defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) ||
+    defined(STM32H7) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) ||
+    defined(STM32L5) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL) ||
+    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) ||
+    defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F446xx) ||
+    defined(STM32F103xB) || defined(STM32F103x8)
 
 #if __has_include("main.h")
 #include "main.h" // CubeMX projects usually include the correct stm32xxxx_hal.h here
@@ -59,11 +66,11 @@ void mp2722_platform_set_i2c_handle(i2c_master_dev_handle_t handle);
 #error "STM32 HAL header not found. Define MP2722_STM32_HAL_HEADER, e.g. -DMP2722_STM32_HAL_HEADER=\"stm32f4xx_hal.h\""
 #endif
 
-/**
- * @brief Set the STM32 HAL I2C handle
- * Must be called before mp2722_get_platform_i2c()
- */
-void mp2722_platform_set_i2c_handle(I2C_HandleTypeDef *handle);
+    /**
+     * @brief Set the STM32 HAL I2C handle
+     * Must be called before mp2722_get_platform_i2c()
+     */
+    void mp2722_platform_set_i2c_handle(I2C_HandleTypeDef *handle);
 
 /**
  * @brief Set the STM32 HAL UART handle for logging (optional)

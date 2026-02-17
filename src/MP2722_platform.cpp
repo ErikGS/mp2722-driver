@@ -136,8 +136,16 @@ MP2722_LogCallback mp2722_get_platform_log()
 
 // ============================================================================
 // STM32 HAL - I2C HAL + UART HAL logging
+// Detect STM32 by checking for STM32 family defines set by the toolchain
 // ============================================================================
 #elif defined(HAL_I2C_MODULE_ENABLED)
+|| defined(STM32F0) || defined(STM32F1) || defined(STM32F2) || defined(STM32F3) ||
+    defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) ||
+    defined(STM32H7) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) ||
+    defined(STM32L5) || defined(STM32U5) || defined(STM32WB) || defined(STM32WL) ||
+    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F405xx) ||
+    defined(STM32F407xx) || defined(STM32F411xE) || defined(STM32F446xx) ||
+    defined(STM32F103xB) || defined(STM32F103x8)
 
 #if __has_include("main.h")
 #include "main.h" // CubeMX projects usually include the correct stm32xxxx_hal.h here
@@ -162,10 +170,9 @@ MP2722_LogCallback mp2722_get_platform_log()
 #endif
 
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 
-static I2C_HandleTypeDef *_hi2c = nullptr;
+                                static I2C_HandleTypeDef *_hi2c = nullptr;
 static UART_HandleTypeDef *_huart = nullptr;
 
 void mp2722_platform_set_i2c_handle(I2C_HandleTypeDef *handle)
