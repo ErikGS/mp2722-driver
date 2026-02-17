@@ -36,10 +36,11 @@ jobs:
           - board: nucleo_f446re
             framework: stm32cube
             example: examples/STM32Cube/MP2722_STM32.cpp
+            build_flags: "-Iexamples/STM32Cube"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: pip install platformio
-      - run: pio ci --lib="." --board=${{ matrix.board }} --project-option="framework=${{ matrix.framework }}" --project-option="lib_ldf_mode=deep+" "${{ matrix.example }}"
+      - run: pio ci --lib="." --board=${{ matrix.board }} --project-option="framework=${{ matrix.framework }}" --project-option="lib_ldf_mode=deep+" --project-option="build_flags=${{ matrix.build_flags }}" "${{ matrix.example }}"
