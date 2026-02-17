@@ -5,7 +5,7 @@
   "keywords": "mp2722, battery, charger, buck, boost, usb-c, usbc, bms, bmic, pmic, i2c",
   "repository": {
     "type": "git",
-    "url": "https://github.com/erikgs/MP2722"
+    "url": "https://github.com/erikgs/mp2722-driver"
   },
   "authors": [
     {
@@ -18,7 +18,6 @@
   "frameworks": ["arduino", "espidf", "stm32cube"],
   "platforms": "*",
   "build": {
-    "srcFilter": ["+<src/>"],
     "includeDir": "src"
   }
 }
