@@ -9,4 +9,4 @@ idf_component_register(SRCS "src/MP2722.cpp" "src/MP2722_platform.cpp"
 
 idf_build_set_property(MINIMAL_BUILD ON)
 
-project(mp2722)
+project(mp2722-driver)
