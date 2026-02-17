@@ -39,7 +39,7 @@ jobs:
           - board: nucleo_f446re
             framework: stm32cube
             example: examples/STM32Cube/MP2722_STM32.cpp
-            build_flags: ""
+            build_flags: "-DMP2722_STM32_HAL_HEADER=stm32f4xx_hal.h"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
