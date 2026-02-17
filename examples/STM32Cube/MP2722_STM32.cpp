@@ -10,8 +10,8 @@
 // Declare a global pointer for the driver instance to be initialized after setting I2C handle
 MP2722 *pmic = nullptr;
 
-static I2C_HandleTypeDef hi2c1;
-static UART_HandleTypeDef huart2;
+static I2C_HandleTypeDef hi2c1{};
+static UART_HandleTypeDef huart2{};
 
 // --------------------------------------------------------------------------
 // CI stub peripheral-init functions
