@@ -1,11 +1,3 @@
-/**
- * @brief Minimal CI stub for STM32Cube build verification.
- *
- * A real STM32 project requires CubeMX-generated code (SystemClock_Config,
- * MX_*_Init, hi2c1, huart2, etc.) which cannot exist in a CI environment.
- * This stub only verifies that the driver library compiles against the
- * STM32 HAL headers.
- */
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
