@@ -73,7 +73,6 @@ MP2722_LogCallback mp2722_get_platform_log()
 // ============================================================================
 #elif defined(ESP_PLATFORM)
 
-#include "driver/i2c_master.h"
 #include "esp_log.h"
 #include <string.h>
 
