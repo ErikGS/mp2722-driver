@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "stm32_hal_conf.h"
+#include "stm32f4xx_hal_conf.h"
 
 #include "MP2722.h"
 
