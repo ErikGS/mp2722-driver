@@ -29,7 +29,7 @@ jobs:
             example: examples/Arduino/MP2722_Arduino.ino
           - board: esp32dev
             framework: arduino
-            example: examples/ESP-IDF/MP2722_ESP32-ESP-IDF.cpp
+            example: examples/Arduino/MP2722_Arduino.ino
           - board: esp32dev
             framework: espidf
             example: examples/ESP-IDF/MP2722_ESP32-ESP-IDF.cpp
