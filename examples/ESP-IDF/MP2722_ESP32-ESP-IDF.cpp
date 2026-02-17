@@ -94,7 +94,7 @@ extern "C" void app_main(void)
         }
 
         // Kick the watchdog to prevent it from resetting the device (if enabled, which it is by default)
-        pmic.watchdogKick(); // Watchdog is a heartbeat to let the PMIC know the system is still alive.
+        pmic->watchdogKick(); // Watchdog is a heartbeat to let the PMIC know the system is still alive.
 
         // Delay for 1 second interval
         vTaskDelay(pdMS_TO_TICKS(1000));
