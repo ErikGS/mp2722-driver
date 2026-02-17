@@ -39,4 +39,4 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install platformio
-      - run: pio ci --lib="." --board=${{ matrix.board }} "${{ matrix.example }}"
+      - run: pio ci --lib="." --board=${{ matrix.board }} --project-option="lib_ldf_mode=deep+" "${{ matrix.example }}"
