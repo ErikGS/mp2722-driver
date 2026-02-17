@@ -28,9 +28,7 @@ const MP2722_I2C *mp2722_get_platform_i2c();
 MP2722_LogCallback mp2722_get_platform_log();
 
 #if defined(ESP_PLATFORM) && !defined(ARDUINO)
-
-struct i2c_master_dev_handle_t;
-
+#include "driver/i2c_master.h"
 /**
  * @brief Set the ESP-IDF I2C device handle
  * Must be called before mp2722_get_platform_i2c()
@@ -39,8 +37,29 @@ void mp2722_platform_set_i2c_handle(i2c_master_dev_handle_t handle);
 
 #elif defined(HAL_I2C_MODULE_ENABLED)
 
-struct __I2C_HandleTypeDef;
-struct __UART_HandleTypeDef;
+#if defined(MP2722_STM32_HAL_HEADER)
+#include MP2722_STM32_HAL_HEADER
+#elif __has_include("main.h")
+#include "main.h" // CubeMX projects usually include the correct stm32xxxx_hal.h here
+#elif __has_include("stm32f4xx_hal.h")
+#include "stm32f4xx_hal.h"
+#elif __has_include("stm32f1xx_hal.h")
+#include "stm32f1xx_hal.h"
+#elif __has_include("stm32f0xx_hal.h")
+#include "stm32f0xx_hal.h"
+#elif __has_include("stm32g0xx_hal.h")
+#include "stm32g0xx_hal.h"
+#elif __has_include("stm32g4xx_hal.h")
+#include "stm32g4xx_hal.h"
+#elif __has_include("stm32h7xx_hal.h")
+#include "stm32h7xx_hal.h"
+#elif __has_include("stm32l0xx_hal.h")
+#include "stm32l0xx_hal.h"
+#elif __has_include("stm32l4xx_hal.h")
+#include "stm32l4xx_hal.h"
+#else
+#error "STM32 HAL header not found. Define MP2722_STM32_HAL_HEADER, e.g. -DMP2722_STM32_HAL_HEADER=\"stm32f4xx_hal.h\""
+#endif
 
 /**
  * @brief Set the STM32 HAL I2C handle
