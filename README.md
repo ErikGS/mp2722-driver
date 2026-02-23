@@ -233,4 +233,4 @@ All methods return `MP2722_Result`:
 
 ## License
 
-[MIT](LICENSE) © Erik GS
+   [Apache-2.0 license](LICENSE) Copyright © 2026 Erik Gimenes dos Santos
