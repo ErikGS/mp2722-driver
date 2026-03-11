@@ -1,15 +1,16 @@
 # MP2722 Driver Library
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub License](https://img.shields.io/github/license/ErikGS/mp2722-driver)](LICENSE)
 
-Platform-agnostic I2C driver for the **MPS MP2722** USB Type-C battery charger/power management IC.
+C/C++ platform-agnostic driver for the MP2722 (MPS) battery charger. Featuring I2C control and status monitoring, NVDC power path management and USB-C DRP management.
 
 ## Features
 
-- **Portable** — built-in I2C and logging for Arduino, ESP-IDF, STM32 HAL and Linux. Or you can simply provide your own I2C wrapper and log callback on any platform.
-- **Native Linux support** — out-of-the-box compatibility with any Linux SBC, such as Raspberry Pi, BeagleBone and even Desktop, using the standard Linux I2C interface (`/dev/i2c-X`).
-- **Optional logging** — Built-in logging with configurable log levels (DEBUG, INFO, WARN, ERROR or NONE) with support for custom log callbacks.
-- **Full status/fault readout** — USB Type-C CC detection, legacy/non-standard USB detection, JEITA NTC, charger state, fault state, etc. Refer to [register map](docs/register_map.md) for complete list of available status and fault registers.
+- **Customizable/Portable** — Just provide an I2C interface and a log callback to setup the driver on your platform.
+- **Pre-set/Ready-to-use** — Built-in I2C/logging setup for Arduino (`Wire`/`Serial`), ESP-IDF (`i2c_master`/`esp_log`), STM32 (`HAL`/`UART`) and Linux (`i2c-dev`/`stderr`), if you don't set it up yourself.
+- **Optional logging** — Configurable log levels (DEBUG, INFO, WARN, ERROR or NONE) supporting a custom log callback.
+- **Fully fledged** — Full status/fault readout: USB Type-C CC detection, legacy/non-standard USB detection, JEITA NTC, charger state, fault state, etc. You can refer to the [register map](docs/register_map.md) for the complete list of available status and fault registers.
+- **Linux Compatible** — out-of-the-box compatibility with any Linux `i2c-dev` enabled environment, which is standard on most PCs and SBCs (Raspberry Pi, BeagleBone). (`/dev/i2c-X`).
 
 ## Quick Start
 
@@ -24,9 +25,9 @@ Platform-agnostic I2C driver for the **MPS MP2722** USB Type-C battery charger/p
 | **Windows/macOS** | —               | `stderr`            | Provide your own wrappers                                |
 | **Other**         | —               | —                   | Provide your own wrappers                                |
 
-### Using built-in I2C supported platforms (Arduino, ESP-IDF, STM32CubeMX, Linux host)
+### Using the 'ready-to-go' supported platforms (Arduino, ESP-IDF, STM32CubeMX, Linux host)
 
-For platforms that don't use I2C/UART handle or bus address (e.g., Arduino Wire):
+For the ones that DON'T use I2C/UART handle or bus address (e.g., Arduino Wire):
 
 ```cpp
 #include "MP2722.h"
@@ -45,10 +46,12 @@ void pmic_init() // Call this after usual platform setup (Serial, Analog/Digital
    pmic.setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
    pmic.setChargeCurrent(1000); // mA = 1A @ CC (Constant Current) Phase - Basic config
    pmic.setCharging(true); // Enable charger (off by default as basic config is required)
+
+   // Note: Hardware watchdog is active by default (40s). Ensure watchdogKick() is called in your main loop.
 }
 ```
 
-For platforms that do use I2C/UART handle or bus address (e.g., ESP-IDF I2C Master, STM32 HAL, Linux host):
+For the ones that DO use I2C/UART handle or bus address (e.g., ESP-IDF I2C Master, STM32 HAL, Linux host):
 
 ```cpp
 #include "MP2722.h"
@@ -65,22 +68,32 @@ void pmic_init() // Call after usual platform setup (Serial, Analog/Digital I/O,
    // Now that the platform I2C/UART handle/bus is set, create the driver instance
    pmic = new MP2722();
 
-   // (Optional) Enable built-in driver logging on supported platforms
-   pmic->setLogCallback(MP2722_LogLevel::DEBUG);
+   /// -- From now on actual driver usage remains the same, besides now dealing with a pointer ('->' not '.') --
+   // pmic->setLogCallback(MP2722_LogLevel::DEBUG);
 
-   // Actual driver usage remains the same, besides now dealing with a pointer (-> instead of .)
-   pmic->init(); // In a real application you should only proceed if this returns OK
-   pmic->setChargeVoltage(4200); // mV = 4.2V @ CV (Constant Voltage) Phase - Basic config
-   pmic->setChargeCurrent(1000); // mA = 1A @ CC (Constant Current) Phase - Basic config
-   pmic->setCharging(true); // Enable charger (off by default as basic config is required)
+   // Note: Hardware watchdog is active by default (40s). Ensure watchdogKick() is called in your main loop.
 }
 ```
 
-### Basic Configuration notes
+### Using manual platform implementation
 
-Trickle charge, pre-charge, etc. Are all handled by the IC, so you don't need to worry about them. Just set the fast charge current and the IC will automatically step through the appropriate charging phases based on battery voltage and other conditions. You can read the charger status (pmic.getChargerStatus()) to see which phase it's in. Refer to the [MP2722 datasheet](https://www.monolithicpower.com/en/mp2722.html) for more details on the charging algorithm and how the IC manages the different phases.
+```cpp
+#include "MP2722.h"
 
-OTG boost mode (port can power devices) is enabled by default based on USB detection, automatically deactivating on low battery. But you can control both things manually if needed (see the [API Reference](docs/api_reference.md) for details).
+// Declare the driver instance globally providing custom wrappers for your platform's I2C read/write functions
+MP2722 pmic({ your_i2c_write_function, your_i2c_read_function });
+
+void pmic_init() // Call after usual platform setup (Serial, Analog/Digital I/O, I2C, etc.)
+{
+   // (Optional) Enable driver logging providing a custom wrapper for your platform's logging function
+   pmic.setLogCallback(MP2722_LogLevel::DEBUG, your_log_function);
+
+   /// -- Actual driver usage remains the same --
+   // Note: Hardware watchdog is active by default (40s). Ensure watchdogKick() is called in your main loop.
+}
+```
+
+**Note:** the I2C function pointers should match `MP2722_I2C` and the log `MP2722_LogCallback` signatures. For the I2C read/write both functions should return `0` on success and non-zero on failure. See the [examples](examples) folder for complete implementation examples.
 
 ### Watchdog Timer (heartbeat)
 
@@ -90,6 +103,12 @@ The MP2722 has a built-in watchdog timer that is enabled by default and has an e
 // From your main application loop at a set interval of 30 seconds or less
 pmic.watchdogKick(); // Reset the watchdog timer to prevent PMIC reset. You can also disable this.
 ```
+
+### Additional notes
+
+- Some parameters such as trickle charge and pre-charge are automously handled by the IC, so unless you know you have a specific need, you don't have to worry about them. Simply set the CV/CC only and the IC will automatically manage appropriate charging phases. You can read the charger status (`pmic.getChargerStatus()`) to keep track of the details. And you can refer to the [MP2722 datasheet](https://www.monolithicpower.com/en/mp2722.html) to know more about the charging process and how the IC behaves.
+
+- DRP/OTG boost mode (port can power devices) is enabled by default based on USB detection, automatically deactivating on low battery. But you can control both things manually if needed (see the [API Reference](docs/api_reference.md) for details).
 
 ### Reading data
 
@@ -116,22 +135,6 @@ switch (status.charger_status)
       break;
 }
 ```
-
-### Usage on other platforms or if you want your own custom I2C and loggging wrappers
-
-```cpp
-#include "MP2722.h"
-
-// 1. Declare the driver instance globally providing custom wrappers for your platform's I2C read/write functions
-MP2722 pmic({ your_i2c_write_function, your_i2c_read_function });
-
-// 2. (Optional) Enable driver logging providing a custom wrapper for your platform's logging function
-pmic.setLogCallback(MP2722_LogLevel::DEBUG, your_log_function);
-
-/// --- Actual driver usage remains the same ---
-```
-
-**Note:** the I2C function pointers should match `MP2722_I2C` and the log `MP2722_LogCallback` signatures. For the I2C read/write both functions should return `0` on success and non-zero on failure. See the [examples](examples) folder for complete implementation examples.
 
 ## Installation
 
