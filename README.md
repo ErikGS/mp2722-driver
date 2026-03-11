@@ -1,6 +1,7 @@
 # MP2722 Driver Library
 
-[![GitHub License](https://img.shields.io/github/license/ErikGS/mp2722-driver)](LICENSE)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ErikGS/mp2722-driver/ci.yml) [![GitHub License](https://img.shields.io/github/license/ErikGS/mp2722-driver)](LICENSE)
+
 
 C/C++ platform-agnostic driver for the MP2722 (MPS) battery charger. Featuring I2C control and status monitoring, NVDC power path management and USB-C DRP management.
 
